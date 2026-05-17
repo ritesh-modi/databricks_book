@@ -34,14 +34,33 @@ Exports three things:
 **Do not duplicate book metadata into individual pages.** When a component or page needs volume-specific data, import from this file.
 
 ### Layout-driven SEO with primary-volume hint
-`src/layouts/Layout.astro` wraps every page. It:
+`src/layouts/Layout.astro` is the SEO chassis. It wraps every page and emits, by default:
 
-- Auto-builds the canonical URL from `Astro.url.pathname` + `astro.config.mjs`'s `site` (currently `https://genaiblueprints.com`).
-- Emits a `Person` schema plus one `Book` schema per relevant volume. Pages that focus on one volume pass `primaryVolume="v3"` or `primaryVolume="v4"` — Layout then emits only that volume's Book schema. Series-wide pages (homepage, FAQ, buy, about, blog) omit the prop and Layout emits both Books.
-- Accepts a `jsonLd` prop (object or array) appended to — not replacing — those defaults. Page-specific schemas (FAQPage, TechArticle, BreadcrumbList, BlogPosting, WebSite, BookSeries) come in this way.
+- Canonical URL from `Astro.url.pathname` + `astro.config.mjs` `site` (currently `https://genaiblueprints.com`).
+- `Book` schema per relevant volume — each with `@id`, `Offer` (price/currency/availability/seller), `audience`, `educationalLevel`, `educationalUse`, `learningResourceType`, `teaches`, `keywords`, `workExample` with `ReadAction`, and `isPartOf` linking the BookSeries. Pages that focus on one volume pass `primaryVolume="v3"` or `primaryVolume="v4"` — Layout then emits only that volume's Book schema. Series-wide pages omit the prop and Layout emits both.
+- `Person` schema for the author — with `@id`, `worksFor` MarketOnce, `alumniOf` Microsoft, `award` list, `email`, expanded `knowsAbout` (every Databricks platform concept), `sameAs` (LinkedIn, GitHub, Medium, Hackernoon, Twitter/X, Amazon author page), and `subjectOf` linking both books.
+- `BookSeries` schema with `hasPart` references to both books.
+- `Organization` schema for site-level entity identity.
+- Verification meta tags for Google / Bing / Yandex — auto-rendered when tokens exist in `series.verification` (skipped while empty).
+- Twitter Card, Open Graph, `theme-color`, `format-detection`, `article:author/tag/published_time/modified_time`, `book:author/isbn`, and `hreflang="en"` / `hreflang="x-default"` alternates.
+- Per-bot robots directives (separate `googlebot` and `bingbot` lines), `max-snippet:-1`, `max-image-preview:large`.
+- Sitemap discovery link (`<link rel="sitemap">`) for older crawlers.
+
+The default schemas use Schema.org `@id` references to link Books → Person → Series → Organization, which Google parses as a knowledge graph subgraph rather than four independent records.
+
+Pages pass a `jsonLd` prop (object or array) that is appended to — not replacing — the defaults. Page-specific schemas (FAQPage, TechArticle, BreadcrumbList, BlogPosting, WebSite, HowTo) come in this way.
 
 ### Topic pillar pages use `TopicShell`
-`src/components/TopicShell.astro` renders the 13 SEO pillar pages in `src/pages/topics/*.astro`. Each topic page only supplies: title, description, keywords, intro, FAQs, related topics, and a `volume` prop (`'v3'` or `'v4'`) — the shell auto-emits BreadcrumbList + TechArticle + FAQPage schemas, renders a "Covered in Volume N" badge, passes `primaryVolume` to Layout, and routes the per-page BuyCTA at the correct volume's Amazon URL.
+`src/components/TopicShell.astro` renders the 13 SEO pillar pages in `src/pages/topics/*.astro`. Each topic page supplies the required props (title, description, keywords, intro, FAQs, related topics, `volume`) and optional SEO-boosting props:
+
+- `wordCount` — drives the auto-computed `time-to-read` badge and TechArticle's `wordCount` + `timeRequired` (read at ~220 words/min).
+- `lastUpdated` — ISO date; defaults to build date; flows into `dateModified` in both meta and JSON-LD.
+- `datePublished` — ISO date; defaults to 2026-01-01; flows into `datePublished` schema.
+- `mentions` — array of `{ name, url? }` for every Databricks technology referenced; rendered as Schema.org `mentions` of type `SoftwareApplication` (semantic SEO, entity recognition).
+- `toc` — array of H2 labels; the component renders a TOC with anchor links that the page-level H2s match via `id="<slug>"` attributes (slug = lowercase, alphanumeric only, hyphens for spaces — `slugify` is inlined).
+- `howToSteps` + `howToTotalTime` — when present, emits HowTo JSON-LD (rich-result eligible). Currently wired on RAG only.
+
+The shell auto-emits TechArticle + FAQPage + BreadcrumbList (+ HowTo when steps present), renders a "Covered in Volume N" badge, passes `primaryVolume` to Layout, and routes the per-page BuyCTA at the correct volume's Amazon URL.
 
 Topic pages currently map to volumes as follows:
 - **V3**: `unity-catalog`, `lakehouse`, `lakeflow-sdp`, `lakeflow-jobs`, `asset-bundles`, `databricks-cicd`, `performance-tuning`.
@@ -67,7 +86,21 @@ There is no single "Buy" button on the site. Every primary Buy CTA routes to `/b
 - The author owns several other domains (`azureblueprints.com`, `velocityengineer.com`, `armtemplate.com`, `azurebluprint.com`, `zerosnone.com`, `onenzeros.com`, `hyper-coding.com`, `loopingly.com`). **These must 301-redirect to `genaiblueprints.com` at the host platform (Vercel/Netlify Domain settings)** — never serve as alternate canonicals, or you'll split SEO rank across domains.
 
 ### Robots / GEO
-`public/robots.txt` explicitly allows AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot) for Generative Engine Optimization. Don't tighten without checking with the author.
+`public/robots.txt` explicitly allows the full AI crawler set (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, Claude-Web, anthropic-ai, PerplexityBot, Perplexity-User, Google-Extended, GoogleOther, CCBot, Applebot, Applebot-Extended, meta-externalagent, Bytespider, DuckAssistBot) plus standard search crawlers (Googlebot, Bingbot, Slurp, DuckDuckBot, YandexBot, Baiduspider) for Generative Engine Optimization. Don't tighten without checking with the author.
+
+### Search engine verification + IndexNow
+`series.verification` in `book.ts` holds three empty string slots — `google`, `bing`, `yandex`. When you have a verification token from Google Search Console / Bing Webmaster Tools / Yandex Webmaster, paste it as the value (just the token, not the full meta tag). Layout will emit the corresponding `<meta name="…-verification">` tag automatically. While empty, no tag is emitted.
+
+`series.indexnow.key` holds the IndexNow API key (already generated: `d1b87503ad504e155bc272e3f5ed8f07`). The matching `public/d1b87503ad504e155bc272e3f5ed8f07.txt` file proves ownership. After deploy, you can push URL changes to Bing/Yandex/Seznam by hitting `https://api.indexnow.org/IndexNow` with the canonical URL and the key — useful for new blog posts and topic updates.
+
+### Sitemap priorities
+`astro.config.mjs` overrides `@astrojs/sitemap`'s defaults with a `serialize` function that sets per-route priority and changefreq:
+- Homepage: priority 1.0, weekly
+- `/buy/`: 0.95, monthly
+- Topic pillar pages (`/topics/<slug>/`): 0.9, monthly
+- Other static pages (`/preview/`, `/faq/`, `/about/`, `/reviews/`): 0.8, monthly
+- Blog index + posts: 0.7, weekly/monthly
+This crawl-budget hint is read by Google and (especially) Bing. Avoid claiming priority 1.0 on multiple pages; it dilutes the signal.
 
 ## Launch-blocking placeholders
 

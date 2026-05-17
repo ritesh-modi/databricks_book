@@ -81,9 +81,13 @@ const v4 = volumes.v4;
             >
               <img
                 src={vol.coverImage}
-                alt={`Cover of ${vol.fullTitle}`}
+                alt={`Cover of ${vol.fullTitle} by Ritesh Modi`}
+                width="800"
+                height="1280"
                 class="w-full h-full object-cover"
                 loading={i === 0 ? 'eager' : 'lazy'}
+                decoding={i === 0 ? 'sync' : 'async'}
+                fetchpriority={i === 0 ? 'high' : 'auto'}
               />
               <div class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/95 text-[var(--color-ink)] text-[10px] font-bold uppercase tracking-wider">
                 Vol {vol.volume}

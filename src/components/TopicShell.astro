@@ -9,6 +9,16 @@ interface FAQ {
   a: string;
 }
 
+interface HowToStep {
+  name: string;
+  text: string;
+}
+
+interface Mention {
+  name: string;
+  url?: string;
+}
+
 interface Props {
   title: string;
   metaTitle?: string;
@@ -16,26 +26,83 @@ interface Props {
   keywords: string[];
   intro: string;
   faqs: FAQ[];
-  /** Which volume of the series covers this topic. Drives the buy CTA and the volume callout. */
+  /** Which volume of the series covers this topic. Drives the buy CTA, the volume callout, and isPartOf. */
   volume: 'v3' | 'v4';
   relatedTopics?: { slug: string; label: string }[];
+  /** Estimated word count for reading-time computation. Falls back to a sensible default. */
+  wordCount?: number;
+  /** ISO date string for the last meaningful content update; falls back to build date. */
+  lastUpdated?: string;
+  /** First publication date (ISO). Defaults to 2026-01-01. */
+  datePublished?: string;
+  /** Optional HowTo steps — if provided, emits HowTo schema (rich-result eligible). */
+  howToSteps?: HowToStep[];
+  /** Optional HowTo total time, ISO 8601 duration (e.g. "PT2H" for two hours). */
+  howToTotalTime?: string;
+  /** Technologies/products mentioned on the page — emitted as Schema.org `mentions` for semantic SEO. */
+  mentions?: Mention[];
+  /** Auto table-of-contents entries. Strings are H2 labels; the component slugifies them. */
+  toc?: string[];
 }
 
-const { title, metaTitle, description, keywords, intro, faqs, volume, relatedTopics = [] } = Astro.props;
+const {
+  title,
+  metaTitle,
+  description,
+  keywords,
+  intro,
+  faqs,
+  volume,
+  relatedTopics = [],
+  wordCount = 2000,
+  lastUpdated,
+  datePublished = '2026-01-01',
+  howToSteps,
+  howToTotalTime,
+  mentions = [],
+  toc = [],
+} = Astro.props;
+
 const v = volumes[volume];
+const buildDate = new Date().toISOString().split('T')[0];
+const lastUpdatedDate = lastUpdated ?? buildDate;
+const readingMinutes = Math.max(3, Math.round(wordCount / 220));
+const slugify = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+
+const siteOrigin = (Astro.site ?? new URL('https://genaiblueprints.com/')).origin;
+const topicUrl = new URL(Astro.url.pathname, Astro.site).href;
 
 const articleSchema = {
   '@context': 'https://schema.org',
   '@type': 'TechArticle',
   headline: title,
+  alternativeHeadline: metaTitle,
   description,
-  author: { '@type': 'Person', name: 'Ritesh Modi', url: 'https://www.riteshmodi.com' },
-  publisher: { '@type': 'Person', name: 'Ritesh Modi' },
-  datePublished: '2026-01-01',
-  dateModified: new Date().toISOString().split('T')[0],
+  author: { '@id': `${siteOrigin}/#person-ritesh-modi` },
+  publisher: { '@id': `${siteOrigin}/#person-ritesh-modi` },
+  datePublished,
+  dateModified: lastUpdatedDate,
   inLanguage: 'en-US',
-  mainEntityOfPage: { '@type': 'WebPage', '@id': new URL(Astro.url.pathname, Astro.site).href },
-  isPartOf: { '@type': 'Book', name: v.fullTitle },
+  url: topicUrl,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': topicUrl },
+  isPartOf: { '@id': `${siteOrigin}/#book-${volume}` },
+  about: keywords.slice(0, 10),
+  keywords: keywords.join(', '),
+  audience: { '@type': 'Audience', audienceType: v.audience.join('; ') },
+  educationalLevel: 'Advanced',
+  educationalUse: 'Professional Development',
+  proficiencyLevel: 'Expert',
+  wordCount,
+  timeRequired: `PT${readingMinutes}M`,
+  ...(mentions.length > 0 && {
+    mentions: mentions.map((m) => ({
+      '@type': 'SoftwareApplication',
+      name: m.name,
+      ...(m.url ? { url: m.url } : {}),
+      applicationCategory: 'DeveloperApplication',
+    })),
+  }),
 };
 
 const faqSchema = {
@@ -48,9 +115,6 @@ const faqSchema = {
   })),
 };
 
-const siteOrigin = (Astro.site ?? new URL('https://genaiblueprints.com/')).origin;
-const topicUrl = new URL(Astro.url.pathname, Astro.site).href;
-
 const breadcrumb = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
@@ -60,6 +124,26 @@ const breadcrumb = {
     { '@type': 'ListItem', position: 3, name: title, item: topicUrl },
   ],
 };
+
+const howToSchema =
+  howToSteps && howToSteps.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'HowTo',
+        name: title,
+        description,
+        ...(howToTotalTime ? { totalTime: howToTotalTime } : {}),
+        step: howToSteps.map((s, i) => ({
+          '@type': 'HowToStep',
+          position: i + 1,
+          name: s.name,
+          text: s.text,
+        })),
+      }
+    : null;
+
+const extraSchemas: Array<Record<string, unknown>> = [articleSchema, faqSchema, breadcrumb];
+if (howToSchema) extraSchemas.push(howToSchema);
 ---
 
 <Layout
@@ -68,7 +152,9 @@ const breadcrumb = {
   type="article"
   keywords={keywords}
   primaryVolume={volume}
-  jsonLd={[articleSchema, faqSchema, breadcrumb]}
+  publishedTime={datePublished}
+  modifiedTime={lastUpdatedDate}
+  jsonLd={extraSchemas}
 >
   <nav class="max-w-4xl mx-auto px-5 sm:px-8 pt-8 text-sm text-[var(--color-muted)]" aria-label="Breadcrumb">
     <ol class="flex flex-wrap items-center gap-2">
@@ -95,7 +181,43 @@ const breadcrumb = {
       <p class="mt-5 text-lg text-[var(--color-ink-soft)] leading-relaxed">
         {intro}
       </p>
+      <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[var(--color-muted)] border-y border-[var(--color-line)] py-3">
+        <span class="inline-flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span><strong class="text-[var(--color-ink)]">{readingMinutes} min</strong> read</span>
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>Updated <time datetime={lastUpdatedDate}><strong class="text-[var(--color-ink)]">{lastUpdatedDate}</strong></time></span>
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <span>By <a href="/about/" class="hover:text-[var(--color-accent)] font-medium text-[var(--color-ink)]">Ritesh Modi</a></span>
+        </span>
+      </div>
     </header>
+
+    {toc.length > 0 && (
+      <nav class="mb-10 p-5 rounded-2xl bg-[var(--color-bg)] border border-[var(--color-line)]" aria-label="Table of contents">
+        <p class="text-xs uppercase tracking-wider font-bold text-[var(--color-muted)] mb-3">On this page</p>
+        <ol class="space-y-1.5 text-sm">
+          {toc.map((label, i) => (
+            <li>
+              <a href={`#${slugify(label)}`} class="text-[var(--color-ink-soft)] hover:text-[var(--color-accent)] transition-colors">
+                <span class="text-[var(--color-muted)] mr-2">{String(i + 1).padStart(2, '0')}</span>
+                {label}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    )}
 
     <div class="prose-custom">
       <slot />

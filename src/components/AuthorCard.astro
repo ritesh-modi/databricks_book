@@ -9,11 +9,12 @@ import { series } from '../data/book';
         <div class="absolute -inset-3 bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-warm)] rounded-full opacity-25 blur-2xl"></div>
         <img
           src={series.author.image}
-          alt={series.author.name}
+          alt={`${series.author.name} — ${series.author.title}`}
           width="160"
           height="160"
+          loading="lazy"
+          decoding="async"
           class="relative w-40 h-40 rounded-full object-cover ring-4 ring-white shadow-xl"
-          onerror="this.style.background='linear-gradient(135deg,#0f172a,#1f6feb)';this.style.color='white';this.style.display='flex';this.style.alignItems='center';this.style.justifyContent='center';this.alt='RM';"
         />
       </div>
 

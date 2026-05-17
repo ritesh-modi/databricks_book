@@ -1,0 +1,17 @@
+/* TEAM */
+Author: Ritesh Modi
+Site: https://www.riteshmodi.com
+LinkedIn: https://www.linkedin.com/in/riteshmodi/
+GitHub: https://github.com/ritmodi
+Location: Worldwide
+
+/* THANKS */
+Databricks Inc. — for shipping the platform this book documents
+The data engineering and ML practitioner communities
+
+/* SITE */
+Last update: 2026/05/17
+Standards: HTML5, CSS3, Astro, Tailwind CSS, JSON-LD
+Components: Astro 5
+Software: Astro, Tailwind CSS v4
+Host: Azure Static Web Apps

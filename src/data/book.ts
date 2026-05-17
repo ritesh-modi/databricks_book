@@ -17,7 +17,28 @@ export const series = {
     name: 'Ritesh Modi',
     title: 'Head of AI at MarketOnce · ex-Microsoft Principal Forward Deployed Engineer · 18× Author',
     url: 'https://www.riteshmodi.com',
-    image: '/images/author.jpg',
+    image: '/images/ritesh.jpeg',
+    email: 'riteshmodi1310@gmail.com',
+  },
+  /**
+   * Search engine verification tokens. Empty string means "not yet verified" —
+   * the meta tag is skipped at build time. Paste the value from each console
+   * (the bare token, not the full <meta> tag) when ready.
+   */
+  verification: {
+    google: '', // Google Search Console → Settings → Ownership → HTML tag → content="..."
+    bing: '', // Bing Webmaster Tools → Add Site → Add a meta tag → content="..."
+    yandex: '', // optional
+  },
+  /**
+   * IndexNow key for Bing/Yandex/Seznam push indexing.
+   * The key below is the canonical key for this site. The build script
+   * (scripts/write-indexnow.mjs) writes it to /public/<KEY>.txt so search
+   * engines can verify ownership before accepting URL submissions.
+   * See: https://www.indexnow.org/
+   */
+  indexnow: {
+    key: 'd1b87503ad504e155bc272e3f5ed8f07',
   },
 };
 

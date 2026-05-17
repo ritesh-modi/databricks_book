@@ -41,6 +41,36 @@ const relatedTopics = [
   volume="v4"
   faqs={faqs}
   relatedTopics={relatedTopics}
+  wordCount={2200}
+  toc={[
+    'The architecture, in production-realistic terms',
+    'Chunking is where most teams underestimate the work',
+    'Mosaic AI Vector Search is the right default — usually',
+    'Generation model selection matters less than you think',
+    'Evaluation is what separates a working RAG from a shipped RAG',
+    'Tracing and observability — MLflow handles both',
+    'When RAG becomes an agent — and you should care',
+    'What the book covers, in detail',
+  ]}
+  mentions={[
+    { name: 'Mosaic AI Vector Search' },
+    { name: 'Databricks Foundation Model APIs' },
+    { name: 'MLflow 3' },
+    { name: 'Unity Catalog' },
+    { name: 'Databricks Model Serving' },
+    { name: 'AI Gateway' },
+    { name: 'Agent Bricks' },
+    { name: 'Delta Lake' },
+  ]}
+  howToSteps={[
+    { name: 'Land documents in a Delta table under Unity Catalog', text: 'Use Lakeflow Connect or Auto Loader to ingest source documents into a governed Delta table. Document text becomes a column; metadata (source, timestamp, ACL tags) become sibling columns for filtering during retrieval.' },
+    { name: 'Chunk the documents with the right strategy', text: 'Pick chunking by source structure, not by token count alone. Markdown headers, code blocks, and PDF sections define semantic chunk boundaries. Start at 500–1000 tokens with 10–20% overlap, then iterate based on retrieval evaluation.' },
+    { name: 'Build a Mosaic AI Vector Search index over the chunks', text: 'Create a Delta-sync index that auto-updates from the chunked table. Pick an embedding model from the Foundation Model APIs — bge-large for most cases, smaller models when latency matters.' },
+    { name: 'Wrap retrieval + generation behind a Model Serving endpoint', text: 'Deploy a langchain or pyfunc chain that embeds the question, retrieves top-k chunks, builds the prompt, and calls a generation model. Front the endpoint with the AI Gateway for governance.' },
+    { name: 'Instrument every step with MLflow Tracing', text: 'Enable MLflow 3 autolog for the agent runtime. Every retrieval, every prompt, every generation lands as a trace span. The traces become both the debug surface and the input to evaluation.' },
+    { name: 'Build an offline evaluation set and run MLflow Evaluate', text: 'Curate 50–200 question/answer pairs with expected citations. Run mlflow.evaluate with RAG-specific judges (answer relevance, faithfulness, context precision, context recall). Gate deployments on score regressions.' },
+  ]}
+  howToTotalTime="PT8H"
 >
 
   <p>
@@ -63,7 +93,7 @@ const relatedTopics = [
     source="Figure 45.1 · Volume 4, Chapter 45"
   />
 
-  <h2>The architecture, in production-realistic terms</h2>
+  <h2 id="the-architecture-in-production-realistic-terms">The architecture, in production-realistic terms</h2>
 
   <p>
     A working RAG system on Databricks has five components, each with its own failure modes:
@@ -82,7 +112,7 @@ const relatedTopics = [
     discipline.
   </p>
 
-  <h2>Chunking is where most teams underestimate the work</h2>
+  <h2 id="chunking-is-where-most-teams-underestimate-the-work">Chunking is where most teams underestimate the work</h2>
 
   <p>
     The fundamental tension in chunking: small chunks retrieve more precisely but lose context;
@@ -106,7 +136,7 @@ const relatedTopics = [
     in a blog post.
   </p>
 
-  <h2>Mosaic AI Vector Search is the right default — usually</h2>
+  <h2 id="mosaic-ai-vector-search-is-the-right-default--usually">Mosaic AI Vector Search is the right default — usually</h2>
 
   <p>
     For Databricks-resident data, Mosaic AI Vector Search is almost always the right vector store.
@@ -123,7 +153,7 @@ const relatedTopics = [
     framework in detail.
   </p>
 
-  <h2>Generation model selection matters less than you think</h2>
+  <h2 id="generation-model-selection-matters-less-than-you-think">Generation model selection matters less than you think</h2>
 
   <p>
     Once retrieval works, the choice of generation model becomes mostly a cost-vs-quality tradeoff.
@@ -137,7 +167,7 @@ const relatedTopics = [
     retrieval and a mid-tier generator usually beats worse retrieval and a frontier model.
   </p>
 
-  <h2>Evaluation is what separates a working RAG from a shipped RAG</h2>
+  <h2 id="evaluation-is-what-separates-a-working-rag-from-a-shipped-rag">Evaluation is what separates a working RAG from a shipped RAG</h2>
 
   <p>
     The single biggest gap between RAG demos and RAG products is the absence of evaluation. If you
@@ -163,7 +193,7 @@ const relatedTopics = [
     apply to any other production code.
   </p>
 
-  <h2>Tracing and observability — MLflow handles both</h2>
+  <h2 id="tracing-and-observability--mlflow-handles-both">Tracing and observability — MLflow handles both</h2>
 
   <p>
     MLflow 3.0 added native LLM tracing — every retrieval, every model call, every tool invocation
@@ -176,7 +206,7 @@ const relatedTopics = [
     The <a href="/topics/mlflow/">MLflow topic guide</a> goes deeper into the tracing model.
   </p>
 
-  <h2>When RAG becomes an agent — and you should care</h2>
+  <h2 id="when-rag-becomes-an-agent--and-you-should-care">When RAG becomes an agent — and you should care</h2>
 
   <p>
     The line between "RAG system" and "agent" blurs quickly. The moment your system needs to
@@ -191,7 +221,7 @@ const relatedTopics = [
     promote it to an agent and use the right framework.
   </p>
 
-  <h2>What the book covers, in detail</h2>
+  <h2 id="what-the-book-covers-in-detail">What the book covers, in detail</h2>
 
   <p>
     <em>Databricks for Practitioners</em> dedicates a full chapter to RAG. It includes:

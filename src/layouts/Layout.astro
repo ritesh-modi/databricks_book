@@ -4,6 +4,7 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import StickyBuyBar from '../components/StickyBuyBar.astro';
 import { series, volumes, type Volume } from '../data/book';
+const { verification } = series;
 
 export interface Props {
   title: string;
@@ -37,31 +38,58 @@ const {
 const fullTitle = title.includes(series.title) ? title : `${title} | ${series.title}`;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
 const ogImageUrl = new URL(ogImage, Astro.site).href;
+const siteHost = new URL(Astro.site ?? 'https://genaiblueprints.com').origin;
+const authorImageUrl = new URL(series.author.image, Astro.site).href;
+const buildDate = new Date().toISOString().split('T')[0];
+
+const offerSchemaFor = (v: Volume) => ({
+  '@type': 'Offer',
+  url: v.amazonUrl.startsWith('PLACEHOLDER') ? `${siteHost}/buy/#${v.key}` : v.amazonUrl,
+  priceCurrency: v.price.currency,
+  price: v.price.kindle.toFixed(2),
+  availability: 'https://schema.org/InStock',
+  itemCondition: 'https://schema.org/NewCondition',
+  seller: { '@type': 'Organization', name: 'Amazon.com' },
+  validFrom: `${v.publishedYear}-01-01`,
+});
 
 const bookSchemaFor = (v: Volume) => ({
   '@context': 'https://schema.org',
   '@type': 'Book',
+  '@id': `${siteHost}/#book-${v.key}`,
   name: v.fullTitle,
   alternateName: v.subtitle,
   bookEdition: `Volume ${v.volume}`,
-  author: {
-    '@type': 'Person',
-    name: series.author.name,
-    url: series.author.url,
-    jobTitle: series.author.title,
-  },
+  author: { '@id': `${siteHost}/#person-ritesh-modi` },
   isbn: v.isbn.startsWith('PLACEHOLDER') ? undefined : v.isbn,
   publisher: v.publisher,
   datePublished: `${v.publishedYear}`,
   inLanguage: v.language,
   description: v.description,
   numberOfPages: v.pages || undefined,
-  url: new URL('/', Astro.site).href,
+  url: `${siteHost}/buy/#${v.key}`,
   image: new URL(v.coverImage, Astro.site).href,
   bookFormat: 'https://schema.org/EBook',
   about: v.keyTopics,
+  audience: { '@type': 'Audience', audienceType: v.audience.join('; ') },
+  educationalLevel: 'Advanced',
+  educationalUse: 'Professional Development',
+  learningResourceType: 'Reference Book',
+  teaches: v.keyTopics,
+  keywords: v.keyTopics.join(', '),
+  offers: offerSchemaFor(v),
+  workExample: {
+    '@type': 'Book',
+    isbn: v.isbn.startsWith('PLACEHOLDER') ? undefined : v.isbn,
+    bookFormat: 'https://schema.org/EBook',
+    potentialAction: {
+      '@type': 'ReadAction',
+      target: v.amazonUrl.startsWith('PLACEHOLDER') ? `${siteHost}/buy/#${v.key}` : v.amazonUrl,
+    },
+  },
   isPartOf: {
     '@type': 'BookSeries',
+    '@id': `${siteHost}/#series`,
     name: series.seriesName,
   },
 });
@@ -73,39 +101,112 @@ const defaultBookSchemas = primaryVolume
 const personSchema = {
   '@context': 'https://schema.org',
   '@type': 'Person',
+  '@id': `${siteHost}/#person-ritesh-modi`,
   name: series.author.name,
+  givenName: 'Ritesh',
+  familyName: 'Modi',
   jobTitle: series.author.title,
+  description:
+    'Head of AI at MarketOnce. Previously Principal Forward Deployed Engineer at Microsoft. 18-time technology author, speaker at Microsoft BUILD, .NET Conf, and Global Azure. Creator of Microsoft\'s open-source RAG Experiment Accelerator and LLMOps PromptFlow Template.',
   url: series.author.url,
-  sameAs: [
-    'https://www.linkedin.com/in/riteshmodi/',
-    'https://github.com/ritmodi',
-    'https://medium.com/@scorchsp1',
-    'https://hackernoon.com/u/ritmodi',
+  image: authorImageUrl,
+  email: `mailto:${series.author.email}`,
+  worksFor: {
+    '@type': 'Organization',
+    name: 'MarketOnce',
+  },
+  alumniOf: [
+    { '@type': 'Organization', name: 'Microsoft' },
   ],
+  award: [
+    'Microsoft Regional Director (honorary, 2018–2020)',
+    'Microsoft BUILD 2024 Speaker',
+    '.NET Conference 2025 Speaker',
+    'Global Azure 2025 Speaker',
+  ],
+  knowsLanguage: ['en'],
   knowsAbout: [
     'Databricks',
     'Apache Spark',
     'Unity Catalog',
     'Lakeflow',
+    'Lakeflow Spark Declarative Pipelines',
+    'Lakeflow Jobs',
     'Delta Lake',
+    'Liquid Clustering',
+    'Predictive Optimization',
     'MLflow',
+    'MLflow 3',
     'Mosaic AI',
+    'Mosaic AI Vector Search',
+    'Mosaic AI Agent Framework',
     'Generative AI',
     'Retrieval Augmented Generation',
     'Vector Search',
     'Agent Bricks',
+    'Multi-Agent Supervisor',
+    'Model Context Protocol',
     'Multi-Agent Systems',
     'MLOps',
     'LLMOps',
-    'Feature Stores',
+    'GenAIOps',
+    'Databricks Feature Store',
     'Lakehouse Architecture',
     'Lakebase',
+    'AI Gateway',
+    'Foundation Model APIs',
     'Azure',
     'Microsoft Azure',
+    'Databricks Asset Bundles',
+    'Declarative Automation Bundles',
+    'GitHub Actions OIDC',
+  ],
+  sameAs: [
+    'https://www.linkedin.com/in/riteshmodi/',
+    'https://github.com/ritmodi',
+    'https://medium.com/@scorchsp1',
+    'https://hackernoon.com/u/ritmodi',
+    'https://twitter.com/scorchsp1',
+    'https://x.com/scorchsp1',
+    'https://www.amazon.com/stores/Ritesh-Modi/author/B07JL3GBP9',
+  ],
+  subjectOf: [
+    { '@id': `${siteHost}/#book-v3` },
+    { '@id': `${siteHost}/#book-v4` },
   ],
 };
 
-const allJsonLd: Array<Record<string, unknown>> = [...defaultBookSchemas, personSchema];
+const seriesSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BookSeries',
+  '@id': `${siteHost}/#series`,
+  name: series.seriesName,
+  alternateName: series.title,
+  author: { '@id': `${siteHost}/#person-ritesh-modi` },
+  numberOfBooks: 2,
+  hasPart: [
+    { '@id': `${siteHost}/#book-v3` },
+    { '@id': `${siteHost}/#book-v4` },
+  ],
+};
+
+const orgSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': `${siteHost}/#org`,
+  name: series.title,
+  url: siteHost,
+  logo: `${siteHost}/favicon.svg`,
+  founder: { '@id': `${siteHost}/#person-ritesh-modi` },
+  sameAs: personSchema.sameAs,
+};
+
+const allJsonLd: Array<Record<string, unknown>> = [
+  ...defaultBookSchemas,
+  personSchema,
+  seriesSchema,
+  orgSchema,
+];
 if (jsonLd) {
   if (Array.isArray(jsonLd)) allJsonLd.push(...jsonLd);
   else allJsonLd.push(jsonLd);
@@ -120,17 +221,30 @@ if (jsonLd) {
     <meta name="generator" content={Astro.generator} />
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
     <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#ff3621" />
+    <meta name="format-detection" content="telephone=no" />
+
+    {verification.google && <meta name="google-site-verification" content={verification.google} />}
+    {verification.bing && <meta name="msvalidate.01" content={verification.bing} />}
+    {verification.yandex && <meta name="yandex-verification" content={verification.yandex} />}
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" hreflang="en" href={canonicalUrl} />
+    <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
 
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     {keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
     <meta name="author" content={series.author.name} />
+    <meta name="publisher" content={series.author.name} />
+    <meta name="rating" content="general" />
+    <meta name="revisit-after" content="7 days" />
 
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     {!noindex && <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />}
+    {!noindex && <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />}
+    {!noindex && <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />}
 
     <meta property="og:type" content={type} />
     <meta property="og:title" content={fullTitle} />
@@ -139,26 +253,41 @@ if (jsonLd) {
     <meta property="og:image" content={ogImageUrl} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${series.title} — ${series.author.name}`} />
     <meta property="og:site_name" content={series.title} />
     <meta property="og:locale" content="en_US" />
     {publishedTime && <meta property="article:published_time" content={publishedTime} />}
     {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    {!modifiedTime && type === 'article' && <meta property="article:modified_time" content={buildDate} />}
     {type === 'article' && <meta property="article:author" content={series.author.name} />}
+    {type === 'article' && keywords.length > 0 && keywords.map((k) => <meta property="article:tag" content={k} />)}
+    <meta property="book:author" content={series.author.name} />
+    {primaryVolume && volumes[primaryVolume].isbn && !volumes[primaryVolume].isbn.startsWith('PLACEHOLDER') && (
+      <meta property="book:isbn" content={volumes[primaryVolume].isbn} />
+    )}
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={`${series.title} — ${series.author.name}`} />
     <meta name="twitter:creator" content="@scorchsp1" />
+    <meta name="twitter:site" content="@scorchsp1" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
 
     <link rel="alternate" type="application/rss+xml" title={series.title} href="/rss.xml" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap-index.xml" />
 
     {allJsonLd.map((schema) => (
       <script type="application/ld+json" set:html={JSON.stringify(schema)} />
