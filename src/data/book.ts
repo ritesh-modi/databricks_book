@@ -112,8 +112,8 @@ export const volumes: Record<'v3' | 'v4', Volume> = {
     publishedYear: 2026,
     publisher: 'Independent',
     isbn: 'PLACEHOLDER-ISBN-V4',
-    amazonUrl: 'PLACEHOLDER-AMAZON-URL-V4',
-    amazonAsin: 'PLACEHOLDER-ASIN-V4',
+    amazonUrl: 'https://www.amazon.com/dp/B0H2418X82',
+    amazonAsin: 'B0H2418X82',
     coverImage: '/images/Databricks_Cover_v4_1600x2560.jpg',
     price: { kindle: 32, paperback: 39.99, currency: 'USD' },
     description:
