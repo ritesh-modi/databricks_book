@@ -38,7 +38,7 @@ const {
 const fullTitle = title.includes(series.title) ? title : `${title} | ${series.title}`;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
 const ogImageUrl = new URL(ogImage, Astro.site).href;
-const siteHost = new URL(Astro.site ?? 'https://genaiblueprints.com').origin;
+const siteHost = new URL(Astro.site ?? 'https://www.genaiblueprints.com').origin;
 const authorImageUrl = new URL(series.author.image, Astro.site).href;
 const buildDate = new Date().toISOString().split('T')[0];
 

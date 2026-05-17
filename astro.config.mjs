@@ -2,12 +2,14 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
-// Primary canonical domain. Other domains the author owns (azureblueprints.com,
+// Primary canonical domain — using the `www` variant because Azure Static Web Apps
+// custom domains require a CNAME for www (works on GoDaddy) and GoDaddy doesn't
+// support ALIAS/ANAME at the apex. Apex (genaiblueprints.com) 301-redirects to
+// this via GoDaddy Forwarding. Other domains the author owns (azureblueprints.com,
 // velocityengineer.com, armtemplate.com, azurebluprint.com, zerosnone.com,
-// onenzeros.com, hyper-coding.com, loopingly.com) should 301-redirect to this one
-// at the host platform (Vercel/Netlify/Azure) — never serve as alternate canonicals.
+// onenzeros.com, hyper-coding.com, loopingly.com) should also 301-redirect to this one.
 export default defineConfig({
-  site: 'https://genaiblueprints.com',
+  site: 'https://www.genaiblueprints.com',
   trailingSlash: 'always',
   integrations: [
     sitemap({

@@ -70,7 +70,7 @@ const readingMinutes = Math.max(3, Math.round(wordCount / 220));
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
 
-const siteOrigin = (Astro.site ?? new URL('https://genaiblueprints.com/')).origin;
+const siteOrigin = (Astro.site ?? new URL('https://www.genaiblueprints.com/')).origin;
 const topicUrl = new URL(Astro.url.pathname, Astro.site).href;
 
 const articleSchema = {

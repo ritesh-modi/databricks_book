@@ -1,4 +1,4 @@
-# https://genaiblueprints.com — Databricks for Practitioners
+# https://www.genaiblueprints.com — Databricks for Practitioners
 
 User-agent: *
 Allow: /
@@ -76,5 +76,5 @@ Allow: /
 User-agent: Baiduspider
 Allow: /
 
-Sitemap: https://genaiblueprints.com/sitemap-index.xml
-Host: genaiblueprints.com
+Sitemap: https://www.genaiblueprints.com/sitemap-index.xml
+Host: www.genaiblueprints.com
