@@ -1,0 +1,29 @@
+{
+  "routes": [
+    {
+      "route": "/rss.xml",
+      "headers": { "content-type": "application/xml; charset=utf-8" }
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/404.html",
+    "exclude": [
+      "/images/*",
+      "/figures/*",
+      "/*.{css,js,svg,png,jpg,jpeg,webp,xml,txt,ico,woff,woff2}"
+    ]
+  },
+  "responseOverrides": {
+    "404": { "rewrite": "/404.html", "statusCode": 404 }
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+    "Permissions-Policy": "interest-cohort=()"
+  },
+  "mimeTypes": {
+    ".svg": "image/svg+xml",
+    ".webmanifest": "application/manifest+json"
+  }
+}

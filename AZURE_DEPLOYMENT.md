@@ -47,7 +47,9 @@ gh repo view --web
 
 ## Step 2 — Add the SWA configuration file
 
-Before deploying, add `staticwebapp.config.json` at the **repo root**. This file controls routing, headers, custom error pages, and security. It will not break the existing build.
+The repo already includes `public/staticwebapp.config.json` — Astro copies the `public/` folder verbatim into `dist/` at build time, so this file ends up at `dist/staticwebapp.config.json` where SWA reads it from. **Do not move it to the repo root** — Astro doesn't deploy from the repo root, only from the build output.
+
+The file controls routing, headers, custom error pages, and security:
 
 ```json
 {
@@ -74,11 +76,11 @@ Before deploying, add `staticwebapp.config.json` at the **repo root**. This file
 }
 ```
 
-Commit and push:
+If you edit it, commit and push:
 
 ```bash
-git add staticwebapp.config.json
-git commit -m "Add SWA config: navigation fallback and security headers"
+git add public/staticwebapp.config.json
+git commit -m "Update SWA config"
 git push
 ```
 
