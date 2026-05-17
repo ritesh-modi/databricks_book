@@ -1,0 +1,195 @@
+---
+import TopicShell from '../../components/TopicShell.astro';
+
+const faqs = [
+  { q: 'What is MLflow 3.0?', a: 'MLflow 3.0 is the latest major version, adding native GenAI tracing, agent evaluation primitives, and tighter Databricks integration. It keeps the four pillars of MLflow (tracking, projects, models, registry) but extends them with first-class support for LLM-backed systems.' },
+  { q: 'Why use MLflow on Databricks specifically?', a: "MLflow on Databricks is managed end-to-end. Experiments, models, deployments, and tracing all flow through Unity Catalog with proper governance. You don't run an MLflow tracking server — Databricks does. The same artifacts also work in any non-Databricks environment via open MLflow, so you're never locked in." },
+  { q: 'How does MLflow Tracing work for LLM applications?', a: 'MLflow Tracing captures every model call, retrieval, tool invocation, and intermediate step as a span. For agents and RAG systems, this gives you a complete execution trace per request — visible in the MLflow UI, queryable, and usable as input to evaluation.' },
+  { q: 'What is the MLflow Model Registry used for?', a: 'The Model Registry is the staging area between training and production. Models are registered, versioned, transitioned through stages (Development, Staging, Production), and deployed from the registry. On Databricks, the registry lives in Unity Catalog and inherits its access controls.' },
+  { q: 'Can I use MLflow with non-Databricks frameworks?', a: 'Yes. MLflow is open source and framework-agnostic. It tracks experiments and deploys models from PyTorch, TensorFlow, scikit-learn, XGBoost, LightGBM, and the major LLM providers. On Databricks, the integration is tighter, but the same code works elsewhere.' },
+  { q: 'How does MLflow Evaluate work for RAG and agents?', a: 'MLflow Evaluate runs a dataset of inputs through your pipeline (RAG, agent, model) and applies a configurable set of judges to score the outputs. Built-in judges cover answer relevance, faithfulness, groundedness, and toxicity. Custom judges can be defined in Python or as LLM-as-judge prompts.' },
+];
+
+const relatedTopics = [
+  { slug: 'rag-with-databricks', label: 'RAG on Databricks' },
+  { slug: 'agentbricks', label: 'AgentBricks' },
+  { slug: 'mlops-on-databricks', label: 'MLOps' },
+  { slug: 'feature-stores', label: 'Feature Stores' },
+];
+---
+
+<TopicShell
+  title="MLflow 3.0 on Databricks: The Complete Guide"
+  metaTitle="MLflow 3.0 on Databricks (2026): Tracking, Tracing, Evaluation, Registry"
+  description="Practitioner guide to MLflow 3.0 on Databricks in 2026 — experiment tracking, model registry, LLM tracing, evaluation, and deployment patterns for production ML and GenAI systems."
+  keywords={[
+    'mlflow databricks',
+    'mlflow 3.0',
+    'mlflow tracing',
+    'mlflow evaluate',
+    'mlflow model registry',
+    'mlflow llm',
+    'mlflow genai',
+    'databricks mlflow',
+    'unity catalog mlflow',
+    'mlflow rag evaluation',
+    'mlflow agent evaluation',
+    'mlflow production',
+  ]}
+  intro="MLflow is the connective tissue of every serious ML project on Databricks. The 3.0 release made it the connective tissue for GenAI too — experiments, UC Model Registry, aliases, traces, and evaluation, used together as a system. This guide covers what's new, what matters, and what production teams actually use."
+  volume="v4"
+  faqs={faqs}
+  relatedTopics={relatedTopics}
+>
+
+  <p>
+    MLflow has done something rare: it stayed useful as the field around it shifted from classical
+    ML to deep learning to LLMs. The 3.0 release is the version that makes this explicit. The four
+    pillars are still there — tracking, projects, models, registry — but tracing and evaluation are
+    now first-class primitives, and the GenAI workflow has its own shape.
+  </p>
+
+  <p>
+    On Databricks specifically, MLflow is the managed runtime for almost every ML and AI artifact in
+    your workspace. Experiments, model versions, traces, evaluations — all governed through Unity
+    Catalog, accessible through a single API, deployable to a single Model Serving endpoint.
+  </p>
+
+  <h2>The four-plus-two pillars</h2>
+
+  <p>
+    The classical four:
+  </p>
+
+  <ul>
+    <li><strong>Tracking</strong> — log parameters, metrics, and artifacts from every experiment run.</li>
+    <li><strong>Projects</strong> — package code and dependencies for reproducible execution.</li>
+    <li><strong>Models</strong> — a standardized format for model artifacts, framework-agnostic.</li>
+    <li><strong>Registry</strong> — versioned model storage with stage transitions and approval workflow.</li>
+  </ul>
+
+  <p>
+    The new two:
+  </p>
+
+  <ul>
+    <li><strong>Tracing</strong> — span-based execution traces for LLM applications, RAG pipelines, and agents.</li>
+    <li><strong>Evaluation</strong> — opinionated evaluation framework with built-in and custom judges.</li>
+  </ul>
+
+  <p>
+    On Databricks, all six are integrated. Unity Catalog governs which users see which experiments,
+    which models, which traces. Model Serving deploys directly from the registry. The Lakehouse is
+    the underlying storage.
+  </p>
+
+  <h2>Tracking — still the foundation</h2>
+
+  <p>
+    The tracking API is unchanged in spirit: <code>mlflow.start_run</code>, log params, log metrics,
+    log artifacts, end. The discipline is what separates teams that ship from teams that don't.
+  </p>
+
+  <p>
+    Things that should always be logged for a production model:
+  </p>
+
+  <ul>
+    <li>The exact data version (Delta table snapshot ID or Unity Catalog volume version).</li>
+    <li>The full hyperparameter set, including defaults you didn't override.</li>
+    <li>The evaluation metrics on a held-out test set.</li>
+    <li>The model artifact itself.</li>
+    <li>The code revision (git SHA).</li>
+  </ul>
+
+  <p>
+    With Databricks autologging, much of this happens automatically. But the autolog defaults are a
+    starting point, not a finish line. Be explicit about what matters for your workload.
+  </p>
+
+  <h2>Tracing — the unlock for LLM debugging</h2>
+
+  <p>
+    The single biggest practical win of MLflow 3.0 is tracing. A RAG system or agent now produces a
+    structured trace for every request: the query, the retrieval, the chunks returned, the prompt
+    sent to the model, the model's response, every tool call, every intermediate reasoning step.
+  </p>
+
+  <p>
+    This sounds obvious. It is not, in practice, what most teams had before. Without tracing,
+    debugging "why did the agent say X" means re-running, hoping for reproducibility, hoping the
+    same path is taken. With tracing, you open the trace in MLflow and read the actual path.
+  </p>
+
+  <p>
+    Tracing has a quiet second benefit: traces become evaluation inputs. You can replay production
+    traces against a new prompt and measure regression directly. This collapses the dev/prod gap.
+  </p>
+
+  <h2>The Model Registry, properly used</h2>
+
+  <p>
+    The registry is the production interface to MLflow. Models in the registry have versions,
+    stages, and aliases (in MLflow 2.x+, aliases replaced the older stage system). A typical flow:
+  </p>
+
+  <ol>
+    <li>Train and log a model in an experiment run.</li>
+    <li>Register the model to the registry. It gets version N.</li>
+    <li>Assign aliases: <code>@candidate</code>, <code>@staging</code>, <code>@production</code>.</li>
+    <li>Deploy by reference to the alias: serving always pulls the model tagged <code>@production</code>.</li>
+    <li>Promote a candidate to production by moving the alias. Old version stays accessible for rollback.</li>
+  </ol>
+
+  <p>
+    On Databricks, registry entries live in Unity Catalog, which means three-level naming
+    (<code>catalog.schema.model</code>) and proper ACLs. Production model access is enforced at the
+    catalog level. This eliminates an entire class of "who deployed what" investigations.
+  </p>
+
+  <h2>Evaluation: the discipline the field skipped for too long</h2>
+
+  <p>
+    For a decade, ML evaluation was straightforward — pick a test set, compute accuracy or AUC, ship
+    if the number is high enough. LLM evaluation is harder. There is no single right answer for an
+    open-ended question. Faithfulness, relevance, groundedness, safety — each is a separate judge.
+  </p>
+
+  <p>
+    MLflow Evaluate gives you a structured way to apply many judges in parallel. Built-in judges
+    cover the common cases. Custom judges let you encode domain-specific rules — "did the
+    legal-advice answer cite at least one statute?" or "did the medical answer include the dosage
+    range?"
+  </p>
+
+  <p>
+    The pattern that works:
+  </p>
+
+  <ol>
+    <li>Build an evaluation dataset — input plus expected behavior, not necessarily expected exact output.</li>
+    <li>Define the judges that matter for your use case.</li>
+    <li>Run evaluation on every meaningful pipeline change.</li>
+    <li>Block deployment if any judge regresses past a threshold.</li>
+  </ol>
+
+  <p>
+    The same discipline you'd apply to unit tests, applied to LLM behavior.
+  </p>
+
+  <h2>What the book covers</h2>
+
+  <p>
+    The MLflow chapter in <em>Databricks for Practitioners</em> goes through:
+  </p>
+
+  <ul>
+    <li>A reference experiment tracking pattern that scales from one engineer to a team of 50.</li>
+    <li>Tracing setup for <a href="/topics/rag-with-databricks/">RAG</a> and <a href="/topics/agentbricks/">AgentBricks</a> pipelines.</li>
+    <li>The full Unity Catalog model registry workflow.</li>
+    <li>Evaluation harness design with built-in and custom judges.</li>
+    <li>Promotion gating: how to wire MLflow into CI so a model can't reach production without passing evaluation.</li>
+    <li>Common antipatterns and the failure modes they create downstream.</li>
+  </ul>
+
+</TopicShell>

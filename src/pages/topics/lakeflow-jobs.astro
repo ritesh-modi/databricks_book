@@ -1,0 +1,136 @@
+---
+import TopicShell from '../../components/TopicShell.astro';
+import BookFigure from '../../components/BookFigure.astro';
+
+const faqs = [
+  { q: 'What are Lakeflow Jobs?', a: 'Lakeflow Jobs is the Databricks-native orchestrator (the rename of Databricks Workflows). It runs tasks — notebooks, SQL queries, SDP pipelines, dbt projects, JARs, Python wheels, dbt tasks, AI/BI dashboards refreshes, and external Run-job tasks — with dependencies, retries, schedules, parameters, conditional branches, and event triggers.' },
+  { q: 'When should I use Lakeflow Jobs vs Airflow?', a: 'For workflows that live almost entirely on Databricks (the common case in 2026), Lakeflow Jobs is the simpler answer: same auth, same UC governance, no extra infrastructure, native SDP integration. Airflow remains valuable when you orchestrate across many systems (Snowflake + Databricks + Kafka + SaaS APIs in one DAG) or when an existing Airflow estate is the operational center of gravity. Both can coexist — Airflow triggers Lakeflow Jobs via the Databricks operator.' },
+  { q: 'What are event-driven triggers?', a: 'Jobs can fire when a file arrives in a UC volume, when a Delta table is updated, when a Lakeflow Connect sync completes, or on any webhook. The shift in 2026 is that most pipelines are no longer scheduled — they react to data, which means fewer wasted runs and shorter end-to-end latency.' },
+  { q: 'How do I parameterize jobs?', a: 'Job parameters are first-class — declared at the job level, overridable per run, accessible from any task via Databricks Utilities. Combined with widget parameters in notebooks, you get the same parametrization story for both interactive and scheduled execution.' },
+  { q: 'How do retries and conditional branches work?', a: 'Each task has a retry policy (count, delay, on which error classes). Conditional tasks gate on the success/failure/status of upstream tasks. The "if/else" pattern — run cleanup if anything failed, skip notification if no new rows — drops out naturally instead of being a separate shell script.' },
+  { q: 'Can jobs run as service principals?', a: 'Yes, and they should. Personal access tokens for production jobs are an anti-pattern. Configure the job to run as a service principal with the exact UC grants it needs, OAuth for any external systems it talks to, and you have a job whose security profile is reviewable and auditable.' },
+];
+
+const relatedTopics = [
+  { slug: 'lakeflow-sdp', label: 'Lakeflow SDP' },
+  { slug: 'asset-bundles', label: 'Asset Bundles (DAB)' },
+  { slug: 'databricks-cicd', label: 'CI/CD on Databricks' },
+  { slug: 'unity-catalog', label: 'Unity Catalog' },
+];
+---
+
+<TopicShell
+  title="Lakeflow Jobs on Databricks: Orchestration, Event-Driven Triggers, and Production Patterns"
+  metaTitle="Lakeflow Jobs (2026): Orchestration on Databricks"
+  description="A practitioner guide to Lakeflow Jobs (formerly Databricks Workflows) — task dependencies, event-driven triggers, retries, parameterization, SP-based execution, and the patterns that scale past a thousand jobs."
+  keywords={[
+    'lakeflow jobs',
+    'databricks workflows',
+    'databricks orchestration',
+    'lakeflow jobs vs airflow',
+    'databricks event triggers',
+    'file arrival trigger databricks',
+    'databricks job parameters',
+    'databricks job retries',
+    'databricks service principal job',
+    'databricks ci/cd jobs',
+    'lakeflow jobs 2026',
+  ]}
+  volume="v3"
+  intro="Lakeflow Jobs is the Databricks-native orchestrator: dependency graphs, schedules, event triggers, retries, parameters, conditional branches, all driven from the same UC identity model as the rest of the platform. It's where most production work on Databricks gets scheduled in 2026 — and the patterns it rewards are different from a generic Airflow DAG."
+  faqs={faqs}
+  relatedTopics={relatedTopics}
+>
+  <p>
+    Orchestration is the part of every data platform that gets reinvented three times before anyone
+    writes it down. On Databricks in 2026, the answer has settled: Lakeflow Jobs (the rename of
+    Databricks Workflows) is the default. Tasks chain by dependency. Triggers fire on schedules,
+    file arrivals, Delta table updates, or webhooks. Retries, conditional branches, and parameter
+    overrides are built in. Service principals own production execution.
+  </p>
+
+  <h2>The task taxonomy</h2>
+  <p>
+    A Lakeflow Job is a graph of tasks. The task types that matter most: <strong>Notebook</strong>
+    for Python or SQL development that's also debuggable interactively, <strong>SDP Pipeline</strong>
+    for the Lakeflow Spark Declarative Pipelines you described in
+    <a href="/topics/lakeflow-sdp/">SDP</a>, <strong>SQL Query / Alert / Dashboard</strong> for
+    analytics layer refreshes, <strong>dbt</strong> for dbt-databricks projects, <strong>Python
+    wheel / JAR</strong> for packaged code, and <strong>Run Job</strong> for cross-job composition.
+    There are more — the point is you almost never need to leave the platform to assemble a real
+    pipeline.
+  </p>
+
+  <h2>Event triggers: the move away from cron</h2>
+  <p>
+    The big shift since 2024 is the move from time-based to data-based triggering. Most pipelines now
+    fire on:
+  </p>
+  <ul>
+    <li><strong>File arrival</strong> in a UC volume — bytes land, the job runs, no schedule.</li>
+    <li><strong>Table update</strong> on a Delta table — the upstream SDP pipeline finishes, downstream consumers wake up.</li>
+    <li><strong>Lakeflow Connect sync completion</strong> — the Salesforce sync finished, run the dependent transforms.</li>
+    <li><strong>Webhook</strong> — external system signals readiness.</li>
+  </ul>
+  <p>
+    The operational consequence: end-to-end latency drops from "however long until the next 2am cron"
+    to "however long the upstream took plus the trigger." Costs also drop because nothing runs that
+    didn't have data to process.
+  </p>
+
+  <BookFigure
+    src="/images/figures/ch33_fig1_job_dag_conditional.png"
+    alt="A retail Lakeflow job DAG with six tasks and a conditional branch on success/failure"
+    caption="A retail job DAG. Six tasks, one conditional fork after the quality check. Each downstream task carries a run_if rule that Lakeflow evaluates before scheduling."
+    source="Figure 33.1 · Volume 3, Chapter 33"
+  />
+
+  <h2>Retries, conditionals, and what to actually configure</h2>
+  <p>
+    Per-task retry policy: count, delay, retryable error classes. The right default is 3 retries with
+    exponential backoff for most idempotent tasks, 0 retries for tasks that aren't idempotent (don't
+    re-send the customer email three times). Conditional tasks gate on upstream status — run a
+    notification task <em>if</em> all upstream tasks succeeded, run a cleanup task <em>if</em> any
+    failed. The pattern that replaces ad-hoc try/except blocks.
+  </p>
+
+  <h2>Parameters: one job, many runs</h2>
+  <p>
+    Job-level parameters with per-task references. The single most common use case is
+    environment promotion: the same job definition runs against <code>dev_retail</code>,
+    <code>staging_retail</code>, <code>prod_retail</code> with a single <code>catalog</code>
+    parameter override. Combined with Asset Bundles, this is how you stop maintaining one job per
+    environment.
+  </p>
+
+  <h2>Service principals are non-negotiable in production</h2>
+  <p>
+    Personal access tokens belong in development. Production jobs run as service principals with the
+    exact UC privileges they need and OAuth credentials in UC connections for anything external.
+    The benefit is not just security — it's auditability. When <code>system.access</code> shows that
+    a table was read at 03:47 UTC, you want the principal to be <code>sp-retail-bronze-prod</code>,
+    not <code>alex@example.com</code> who left the team last quarter.
+  </p>
+
+  <h2>The shape of a mature jobs estate</h2>
+  <p>
+    Past ~100 jobs, conventions stop being optional. The patterns that consistently work:
+  </p>
+  <ul>
+    <li>Naming: <code>env__domain__purpose</code> — <code>prod__retail__bronze-ingest</code>.</li>
+    <li>One SP per job (or per small group), narrow UC grants.</li>
+    <li>Job definitions live in Asset Bundles, not the UI.</li>
+    <li>Lakeflow Connect or file-arrival triggers wherever a cron was reflexive.</li>
+    <li>Alerts route to PagerDuty/Slack via the built-in notification channels — not a custom on_failure handler.</li>
+  </ul>
+
+  <h2>What's in Volume 3 on this</h2>
+  <p>
+    Chapter 33 covers Lakeflow Jobs end-to-end: task graph construction, the full trigger taxonomy
+    including the file-arrival and table-update triggers, parameter and conditional patterns, SP
+    setup, and the operational view (run history, alerts, lineage). Combined with
+    <a href="/topics/asset-bundles/">Asset Bundles</a> (Ch 34) and
+    <a href="/topics/databricks-cicd/">CI/CD</a> (Ch 35), that's the full picture of how a job goes
+    from a developer's notebook to a versioned, reviewed, SP-executed production workload.
+  </p>
+</TopicShell>

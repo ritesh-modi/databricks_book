@@ -1,0 +1,80 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import Features from '../components/Features.astro';
+import WhoFor from '../components/WhoFor.astro';
+import AuthorCard from '../components/AuthorCard.astro';
+import FAQSection from '../components/FAQSection.astro';
+import BuyCTA from '../components/BuyCTA.astro';
+import { series, volumes } from '../data/book';
+import { homepageFaqs } from '../data/faqs';
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: homepageFaqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: series.title,
+  url: 'https://genaiblueprints.com/',
+  description: `${volumes.v3.fullTitle} and ${volumes.v4.fullTitle} — the two-volume practitioner series for Databricks in 2026.`,
+  inLanguage: 'en-US',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: 'https://genaiblueprints.com/?q={search_term_string}',
+    'query-input': 'required name=search_term_string',
+  },
+};
+
+const seriesSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BookSeries',
+  name: series.seriesName,
+  author: { '@type': 'Person', name: series.author.name, url: series.author.url },
+  numberOfBooks: 2,
+  hasPart: [
+    { '@type': 'Book', name: volumes.v3.fullTitle, bookEdition: `Volume ${volumes.v3.volume}` },
+    { '@type': 'Book', name: volumes.v4.fullTitle, bookEdition: `Volume ${volumes.v4.volume}` },
+  ],
+};
+---
+
+<Layout
+  title={`${series.title}: The Two-Volume Series for Databricks in 2026`}
+  description={`Two practitioner volumes by ${series.author.name}. Volume 3 — ${volumes.v3.subtitle}: Unity Catalog, Lakeflow, governance, CI/CD. Volume 4 — ${volumes.v4.subtitle}: Mosaic AI, Agent Bricks, MLflow 3, the Multi-Agent Supervisor, Lakebase.`}
+  type="book"
+  keywords={[
+    'databricks book',
+    'databricks for practitioners',
+    'databricks production lakehouse',
+    'databricks ai lakehouse',
+    'unity catalog book',
+    'lakeflow book',
+    'mosaic ai book',
+    'agent bricks',
+    'databricks RAG',
+    'databricks vector search',
+    'mlflow 3',
+    'databricks mlops',
+    'databricks feature store',
+    'multi-agent supervisor',
+    'lakebase',
+    'ritesh modi databricks',
+    'databricks 2026',
+  ]}
+  jsonLd={[faqSchema, websiteSchema, seriesSchema]}
+>
+  <Hero />
+  <Features />
+  <WhoFor />
+  <AuthorCard />
+  <FAQSection faqs={homepageFaqs} />
+  <BuyCTA />
+</Layout>

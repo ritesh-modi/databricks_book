@@ -1,0 +1,112 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import BuyCTA from '../../components/BuyCTA.astro';
+import { volumes } from '../../data/book';
+
+const v3Topics = [
+  { slug: 'unity-catalog', title: 'Unity Catalog', desc: 'The three-level namespace, ABAC, governed tags, lineage, audit, and how UC becomes the platform contract.' },
+  { slug: 'lakehouse', title: 'Lakehouse Architecture', desc: 'Delta Lake (with Iceberg/UniForm interop), Unity Catalog, medallion architecture — the substrate everything else runs on.' },
+  { slug: 'lakeflow-sdp', title: 'Lakeflow SDP', desc: 'Spark Declarative Pipelines (formerly DLT) — declarative bronze/silver/gold, streaming tables, quality expectations, APPLY CHANGES for CDC.' },
+  { slug: 'lakeflow-jobs', title: 'Lakeflow Jobs', desc: 'Orchestration on Databricks — task dependencies, event triggers, retries, parameters, SP execution.' },
+  { slug: 'asset-bundles', title: 'Asset Bundles (DAB)', desc: 'Declarative deployment for jobs, pipelines, and ML artifacts. Versioned, environment-aware, CI/CD-ready.' },
+  { slug: 'databricks-cicd', title: 'CI/CD with GitHub Actions + OIDC', desc: 'Federated identity, no PATs, multi-environment promotion, the testing strategy that actually fits notebooks.' },
+  { slug: 'performance-tuning', title: 'Performance Tuning', desc: 'Photon, Liquid Clustering, Predictive Optimization, and the diagnostic loop that finds bottlenecks fast.' },
+];
+
+const v4Topics = [
+  { slug: 'rag-with-databricks', title: 'RAG on Databricks', desc: 'Retrieval-augmented generation using Mosaic AI Vector Search — chunking, retrieval evaluation, and production patterns.' },
+  { slug: 'agentbricks', title: 'Agent Bricks', desc: 'Classification, information extraction, auto-tuning, the cost-quality frontier. The declarative path to production agents.' },
+  { slug: 'multi-agent-systems', title: 'Multi-Agent Systems', desc: 'The Multi-Agent Supervisor, MCP, agent evaluation, tracing every hop. When single-agent is still the right answer.' },
+  { slug: 'mlflow', title: 'MLflow 3 on Databricks', desc: 'Experiments, UC Model Registry, aliases, traces, evaluation. The operating system for ML and GenAI workflows.' },
+  { slug: 'vector-search', title: 'Mosaic AI Vector Search', desc: 'Delta-sync vs direct-access indexes, embedding models, hybrid retrieval, performance, cost.' },
+  { slug: 'feature-stores', title: 'Feature Store on UC', desc: 'Point-in-time lookups, online serving from Lakebase, and avoiding training-serving skew.' },
+  { slug: 'mlops-on-databricks', title: 'MLOps & Lakehouse Monitoring', desc: 'Alias-driven promotion, champion/challenger, traffic splitting, drift detection.' },
+];
+---
+
+<Layout
+  title="Topics — Databricks Platform + AI, Covered in Depth"
+  description="Long-form practitioner guides covering Unity Catalog, Lakeflow, Asset Bundles, CI/CD, performance tuning, RAG, Agent Bricks, MLflow, Vector Search, Feature Stores, MLOps, and multi-agent systems on Databricks. Free chapters from the Databricks for Practitioners series."
+  keywords={[
+    'databricks topics',
+    'databricks unity catalog',
+    'databricks lakeflow',
+    'databricks rag',
+    'databricks agentbricks',
+    'databricks mlflow',
+    'databricks vector search',
+    'databricks feature store',
+    'databricks lakehouse',
+    'databricks mlops',
+    'databricks asset bundles',
+    'databricks ci/cd',
+  ]}
+>
+  <section class="max-w-5xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-12">
+    <p class="text-sm font-semibold text-[var(--color-accent)] uppercase tracking-wider">Topics</p>
+    <h1 class="font-display text-4xl sm:text-5xl font-extrabold mt-3 tracking-tight">
+      Databricks, covered in depth — platform and AI.
+    </h1>
+    <p class="mt-6 text-lg text-[var(--color-ink-soft)] max-w-3xl leading-relaxed">
+      Free long-form guides on the topics covered across the two volumes. Each page is an
+      opinionated practitioner-level overview — written for engineers who already know the basics
+      and need to understand what actually matters in production.
+    </p>
+  </section>
+
+  <section class="max-w-5xl mx-auto px-5 sm:px-8 pb-16">
+    <div class="flex items-baseline justify-between mb-6 flex-wrap gap-2">
+      <div>
+        <p class="text-xs uppercase tracking-wider font-bold text-[var(--color-accent-deep)]">
+          Volume {volumes.v3.volume} · {volumes.v3.chapterRange}
+        </p>
+        <h2 class="font-display text-2xl font-extrabold mt-1">{volumes.v3.subtitle}</h2>
+      </div>
+      <a href={`/buy/#${volumes.v3.key}`} class="text-sm font-semibold text-[var(--color-accent)]">Get Volume 3 →</a>
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      {v3Topics.map((t) => (
+        <a
+          href={`/topics/${t.slug}/`}
+          class="group block p-6 rounded-2xl border border-[var(--color-line)] bg-white hover:border-[var(--color-accent)] hover:shadow-lg transition-all"
+        >
+          <p class="font-display text-xl font-extrabold group-hover:text-[var(--color-accent)] transition-colors">
+            {t.title}
+          </p>
+          <p class="mt-3 text-[var(--color-ink-soft)] leading-relaxed">{t.desc}</p>
+          <p class="mt-4 text-sm font-semibold text-[var(--color-accent)]">Read the guide →</p>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="max-w-5xl mx-auto px-5 sm:px-8 pb-20">
+    <div class="flex items-baseline justify-between mb-6 flex-wrap gap-2">
+      <div>
+        <p class="text-xs uppercase tracking-wider font-bold text-[var(--color-accent-deep)]">
+          Volume {volumes.v4.volume} · {volumes.v4.chapterRange}
+        </p>
+        <h2 class="font-display text-2xl font-extrabold mt-1">{volumes.v4.subtitle}</h2>
+      </div>
+      <a href={`/buy/#${volumes.v4.key}`} class="text-sm font-semibold text-[var(--color-accent)]">Get Volume 4 →</a>
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      {v4Topics.map((t) => (
+        <a
+          href={`/topics/${t.slug}/`}
+          class="group block p-6 rounded-2xl border border-[var(--color-line)] bg-white hover:border-[var(--color-accent)] hover:shadow-lg transition-all"
+        >
+          <p class="font-display text-xl font-extrabold group-hover:text-[var(--color-accent)] transition-colors">
+            {t.title}
+          </p>
+          <p class="mt-3 text-[var(--color-ink-soft)] leading-relaxed">{t.desc}</p>
+          <p class="mt-4 text-sm font-semibold text-[var(--color-accent)]">Read the guide →</p>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <BuyCTA />
+</Layout>

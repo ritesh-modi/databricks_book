@@ -1,0 +1,22 @@
+---
+import { series, volumes } from '../data/book';
+const minKindle = Math.min(volumes.v3.price.kindle, volumes.v4.price.kindle);
+---
+
+<div class="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-white border-t border-[var(--color-line)] shadow-[0_-2px_12px_rgba(0,0,0,0.05)]">
+  <div class="px-5 py-3 flex items-center gap-3">
+    <div class="flex-1 min-w-0">
+      <p class="text-xs text-[var(--color-muted)]">{series.title} · 2 volumes</p>
+      <p class="text-sm font-semibold truncate">From ${minKindle.toFixed(2)} on Kindle</p>
+    </div>
+    <a
+      href="/buy/"
+      class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[var(--color-accent)] text-white text-sm font-semibold whitespace-nowrap"
+    >
+      Buy
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+      </svg>
+    </a>
+  </div>
+</div>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="540" viewBox="0 0 800 540" style="font-family:Inter,Helvetica,Arial,sans-serif;background:transparent">
+<text x="400" y="30" font-family="Inter,Helvetica,Arial,sans-serif" font-size="18" font-weight="700" fill="#111111" text-anchor="middle" dominant-baseline="central">Figure 49.2: The Monitor-to-Retrain Loop</text>
+<text x="400" y="58" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#444444" text-anchor="middle" dominant-baseline="central">A drift signal becomes a retraining job, a new challenger, and a promoted model.</text>
+<rect x="30" y="100" width="120" height="80" rx="10" fill="#E6F1FB" stroke="#378ADD" stroke-width="1.5"/>
+<text x="90" y="128" font-family="Inter,Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#0C447C" text-anchor="middle" dominant-baseline="central">Monitor</text>
+<text x="90" y="152" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#0C447C" text-anchor="middle" dominant-baseline="central">runs daily</text>
+<rect x="190" y="100" width="120" height="80" rx="10" fill="#FDE8E8" stroke="#B22222" stroke-width="1.5"/>
+<text x="250" y="128" font-family="Inter,Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#8B0000" text-anchor="middle" dominant-baseline="central">Alert</text>
+<text x="250" y="152" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#8B0000" text-anchor="middle" dominant-baseline="central">threshold hit</text>
+<rect x="350" y="100" width="120" height="80" rx="10" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1.5"/>
+<text x="410" y="128" font-family="Inter,Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#633806" text-anchor="middle" dominant-baseline="central">Webhook</text>
+<text x="410" y="152" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#633806" text-anchor="middle" dominant-baseline="central">fires Lakeflow</text>
+<rect x="510" y="100" width="120" height="80" rx="10" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/>
+<text x="570" y="128" font-family="Inter,Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#3C3489" text-anchor="middle" dominant-baseline="central">Retrain</text>
+<text x="570" y="152" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#3C3489" text-anchor="middle" dominant-baseline="central">new challenger</text>
+<rect x="670" y="100" width="120" height="80" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
+<text x="730" y="128" font-family="Inter,Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#085041" text-anchor="middle" dominant-baseline="central">Promote</text>
+<text x="730" y="152" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#085041" text-anchor="middle" dominant-baseline="central">canary to @prod</text>
+<line x1="153" y1="140" x2="185" y2="140" stroke="#666666" stroke-width="2" marker-end="url(#a49b)" />
+<line x1="313" y1="140" x2="345" y2="140" stroke="#666666" stroke-width="2" marker-end="url(#a49b)" />
+<line x1="473" y1="140" x2="505" y2="140" stroke="#666666" stroke-width="2" marker-end="url(#a49b)" />
+<line x1="633" y1="140" x2="665" y2="140" stroke="#666666" stroke-width="2" marker-end="url(#a49b)" />
+<rect x="30" y="210" width="120" height="80" rx="8" fill="#F3F8FD" stroke="#D4D4D4" stroke-width="1.5"/>
+<text x="90" y="236" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#333333" text-anchor="middle" dominant-baseline="central">PSI > 0.25 over</text>
+<text x="90" y="256" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#333333" text-anchor="middle" dominant-baseline="central">3-day breach.</text>
+<rect x="190" y="210" width="120" height="80" rx="8" fill="#FDF4F4" stroke="#D4D4D4" stroke-width="1.5"/>
+<text x="250" y="236" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#333333" text-anchor="middle" dominant-baseline="central">DBSQL alert with</text>
+<text x="250" y="256" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#333333" text-anchor="middle" dominant-baseline="central">metric payload.</text>
+<rect x="350" y="210" width="120" height="80" rx="8" fill="#FEF6E8" stroke="#D4D4D4" stroke-width="1.5"/>
+<text x="410" y="236" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#333333" text-anchor="middle" dominant-baseline="central">Lakeflow job runs</text>
+<text x="410" y="256" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#333333" text-anchor="middle" dominant-baseline="central">retrain_on_drift.</text>
+<rect x="510" y="210" width="120" height="80" rx="8" fill="#F6F4FD" stroke="#D4D4D4" stroke-width="1.5"/>
+<text x="570" y="236" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#333333" text-anchor="middle" dominant-baseline="central">mlflow run logs</text>
+<text x="570" y="256" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#333333" text-anchor="middle" dominant-baseline="central">model to @dev.</text>
+<rect x="670" y="210" width="120" height="80" rx="8" fill="#F0FAF5" stroke="#D4D4D4" stroke-width="1.5"/>
+<text x="730" y="236" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#333333" text-anchor="middle" dominant-baseline="central">eval + canary +</text>
+<text x="730" y="256" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#333333" text-anchor="middle" dominant-baseline="central">alias to @prod.</text>
+<rect x="30" y="330" width="740" height="120" rx="10" fill="#F5F4F0" stroke="#D4D4D4" stroke-width="1.5"/>
+<text x="400" y="358" font-family="Inter,Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#1A1A1A" text-anchor="middle" dominant-baseline="central">Where the human still lives</text>
+<text x="400" y="380" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#1A1A1A" text-anchor="middle" dominant-baseline="central">The loop can run fully autonomous for low-stakes workloads. Mature teams pause before @prod.</text>
+<text x="400" y="400" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#1A1A1A" text-anchor="middle" dominant-baseline="central">Retrain runs automatically; the new version lands in @challenger; a human clicks promote on Monday.</text>
+<text x="400" y="420" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#1A1A1A" text-anchor="middle" dominant-baseline="central">Drift response stays fast; the last-mile decision stays explicit.</text>
+<path d="M 730 180 Q 400 490 90 180" stroke="#1D9E75" stroke-width="2" stroke-dasharray="6 3" fill="none" marker-end="url(#a49b)" />
+<text x="400" y="480" font-family="Inter,Helvetica,Arial,sans-serif" font-size="12" font-weight="600" fill="#085041" text-anchor="middle" dominant-baseline="central">new @prod feeds the next monitoring window</text>
+<defs><marker id="a49b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#666666" /></marker></defs>
+</svg>

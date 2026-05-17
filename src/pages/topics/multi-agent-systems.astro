@@ -1,0 +1,203 @@
+---
+import TopicShell from '../../components/TopicShell.astro';
+import BookFigure from '../../components/BookFigure.astro';
+
+const faqs = [
+  { q: 'What is a multi-agent system?', a: 'A multi-agent system is one where two or more LLM-backed agents collaborate to solve a task — typically through a supervisor pattern, a peer pattern, or a pipeline of specialists. Each agent has its own prompt, tools, and possibly model choice. On Databricks, multi-agent systems are usually built with AgentBricks.' },
+  { q: 'When should I use multiple agents instead of one?', a: "Use multiple agents when (1) the task requires genuinely different specializations (e.g. retrieval + planning + execution), (2) tool count is so high that a single agent's tool selection degrades, or (3) you need parallel reasoning over independent sub-problems. Most tasks don't actually need multi-agent — start with one and decompose only when you have evidence." },
+  { q: 'What is the supervisor pattern?', a: 'A supervisor agent routes the user request to one or more specialist agents, gathers their outputs, and either returns directly or makes additional calls. The supervisor sees the whole conversation; specialists see only what the supervisor passes them. Easy to reason about, predictable, the most common production pattern.' },
+  { q: 'What is the peer-to-peer pattern?', a: 'Agents communicate directly with each other rather than through a supervisor. More flexible but harder to control — failure modes include infinite loops, cascading hallucinations, and runaway message volumes. Rare in production. Useful in research and creative-collaboration scenarios.' },
+  { q: 'How do you debug a multi-agent system?', a: "MLflow tracing captures every agent call, every tool invocation, every intermediate message. For multi-agent, traces become trees rather than linear sequences. You read the trace to see which agent did what when. Without tracing, multi-agent debugging is intractable; with tracing, it's tedious but tractable." },
+  { q: 'What are the biggest failure modes?', a: 'Three to watch: (1) supervisor over-decomposition (breaking a simple task into too many agent calls, adding latency and cost without value); (2) silent error propagation (one agent\'s wrong answer becomes another\'s input, hidden by the next layer); (3) cost runaway from chatty agents — multi-agent can 5-10x your inference cost if not bounded.' },
+];
+
+const relatedTopics = [
+  { slug: 'agentbricks', label: 'AgentBricks' },
+  { slug: 'rag-with-databricks', label: 'RAG' },
+  { slug: 'mlflow', label: 'MLflow Tracing' },
+];
+---
+
+<TopicShell
+  title="Multi-Agent Systems on Databricks: When and How"
+  metaTitle="Multi-Agent Systems on Databricks (2026): Patterns, AgentBricks, Production"
+  description="Practitioner guide to building multi-agent systems on Databricks in 2026 — supervisor and peer patterns, when single-agent is enough, debugging with MLflow tracing, and production failure modes."
+  keywords={[
+    'multi-agent systems databricks',
+    'databricks multi-agent',
+    'multi-agent ai',
+    'agentbricks multi-agent',
+    'supervisor agent pattern',
+    'single agent vs multi agent',
+    'agent orchestration',
+    'production multi-agent',
+    'mlflow agent tracing',
+    'databricks agent framework',
+  ]}
+  intro="Multi-agent is having a moment. The marketing makes it sound mandatory; the engineering reality is more conservative. This guide covers when multi-agent is actually the right answer, the patterns that work with the Databricks Multi-Agent Supervisor and MCP, and the failure modes that catch teams off guard."
+  volume="v4"
+  faqs={faqs}
+  relatedTopics={relatedTopics}
+>
+
+  <p>
+    Multi-agent systems are the trendy answer to "how do we make our agent smarter." Sometimes
+    they're the right answer. Often they're a way of avoiding doing the harder work of designing a
+    single agent well. This guide is a practitioner's view on when each is true.
+  </p>
+
+  <h2>Start with the single-agent question</h2>
+
+  <p>
+    Before adding a second agent, the right question is "can I make the first one better?" The
+    levers on a single agent:
+  </p>
+
+  <ul>
+    <li>Better tool descriptions.</li>
+    <li>Better system prompt.</li>
+    <li>Fewer, more focused tools.</li>
+    <li>A re-ranker or filter in the retrieval pipeline.</li>
+    <li>A stronger model.</li>
+  </ul>
+
+  <p>
+    A lot of "we need multi-agent" cases are actually "we have 47 tools and the agent can't pick the
+    right one." The fix for that is tool pruning, not adding a router agent.
+  </p>
+
+  <h2>When multi-agent does pay off</h2>
+
+  <p>
+    Three cases where multi-agent is genuinely warranted:
+  </p>
+
+  <ol>
+    <li><strong>Genuinely distinct specializations.</strong> A planning agent that decides what to do, plus an execution agent that does it. Different prompts, different tool sets, different models. The boundaries are real, not invented.</li>
+    <li><strong>Tool count saturation.</strong> When a single agent has more tools than the model can reliably reason about, splitting tools across specialist agents recovers selection accuracy. The threshold is workload-dependent, but somewhere between 20 and 50 tools is typical.</li>
+    <li><strong>Parallel independent reasoning.</strong> When the task naturally decomposes into independent sub-tasks (analyze N documents in parallel), running them on parallel agent instances is faster than serial single-agent processing.</li>
+  </ol>
+
+  <h2>The supervisor pattern — the default that works</h2>
+
+  <p>
+    The supervisor pattern is the production default for a reason. It looks like this:
+  </p>
+
+  <ol>
+    <li>The supervisor agent receives the user request.</li>
+    <li>It decides which specialist agent(s) to invoke.</li>
+    <li>Specialists run their work and return results.</li>
+    <li>The supervisor aggregates and returns the final answer — or decides to invoke more specialists.</li>
+  </ol>
+
+  <p>
+    Why it works: the supervisor is the only agent with global state. Specialists are stateless from
+    each other's perspective. Failure of a specialist is recoverable by the supervisor; failures
+    don't cascade. Trace structure is predictable.
+  </p>
+
+  <p>
+    On AgentBricks, supervisors are implemented by composing agents — a specialist agent becomes a
+    tool callable from the supervisor. The supervisor sees the specialist's tool name and
+    description, calls it like any other tool, gets a structured response.
+  </p>
+
+  <h2>Peer-to-peer is rarely the right answer in production</h2>
+
+  <p>
+    Peer-to-peer agent systems — where agents talk directly to each other rather than through a
+    supervisor — are flexible and powerful in research. They are also where the worst production
+    failures happen: infinite message loops, runaway costs, deadlocks, cascading hallucinations.
+  </p>
+
+  <p>
+    The teams that succeed with peer patterns invest heavily in guardrails: maximum message count
+    per session, cost budgets per invocation, timeout enforcement, structured message protocols.
+    Most teams don't need this complexity. Start with supervisors; reach for peer only when you've
+    proven you need to.
+  </p>
+
+  <h2>Tracing is non-negotiable</h2>
+
+  <p>
+    Single-agent traces are linear: a sequence of tool calls. Multi-agent traces are trees: the
+    supervisor invokes specialists, specialists invoke tools, results flow back. Without tree-shaped
+    tracing, debugging is brute-force.
+  </p>
+
+  <p>
+    On Databricks in 2026, <a href="/topics/mlflow/">MLflow Tracing</a> handles multi-agent traces
+    natively. Every span has a parent, every agent invocation is visible in the trace, every tool
+    call is attributable to its caller. Open the trace in the MLflow UI to see the full execution
+    tree.
+  </p>
+
+  <p>
+    Make this the default for every multi-agent system you build. The cost of not having traces is
+    a 10x debugging tax forever.
+  </p>
+
+  <BookFigure
+    src="/images/figures/ch52_fig2_multi_agent_eval.svg"
+    alt="Multi-agent evaluation strategy: turn-level judges per agent plus end-to-end task-level judge"
+    caption="Multi-agent evaluation. Per-hop judges score each agent in isolation; an end-to-end judge scores the whole conversation. You need both — only one of them tells you the truth at a time."
+    source="Figure 52.2 · Volume 4, Chapter 52"
+  />
+
+  <h2>Evaluation: harder than single-agent</h2>
+
+  <p>
+    Single-agent evaluation has a reasonably clean signature: input → expected behavior. Multi-agent
+    evaluation has more surface area:
+  </p>
+
+  <ul>
+    <li>Did the supervisor pick the right specialist?</li>
+    <li>Did each specialist do its job correctly?</li>
+    <li>Did the supervisor synthesize the specialist outputs correctly?</li>
+  </ul>
+
+  <p>
+    A multi-agent system can produce a correct final answer through luck (one specialist's wrong
+    answer happens to be cancelled by another). The eval set needs to include intermediate-state
+    expectations, not just final-output expectations. Trajectory evaluation, not just end-state
+    evaluation.
+  </p>
+
+  <h2>The cost trap</h2>
+
+  <p>
+    Multi-agent inference cost is the dominant production failure of multi-agent designs. A single
+    user request that previously made one model call now makes 5–15. At scale, costs multiply
+    accordingly.
+  </p>
+
+  <p>
+    Cost containment patterns:
+  </p>
+
+  <ul>
+    <li>Hard caps on tokens per request, per session, per agent.</li>
+    <li>Smaller models for specialists, frontier model only for the supervisor.</li>
+    <li>Caching specialist outputs when inputs are repeated.</li>
+    <li>Aggressive early termination — if the supervisor has a high-confidence answer after one specialist call, stop.</li>
+  </ul>
+
+  <h2>What the book covers</h2>
+
+  <p>
+    The multi-agent chapter in <em>Databricks for Practitioners</em> covers:
+  </p>
+
+  <ul>
+    <li>The decision framework for single-agent vs multi-agent.</li>
+    <li>A reference supervisor implementation on <a href="/topics/agentbricks/">AgentBricks</a>.</li>
+    <li>Tool partitioning strategies for tool-saturated systems.</li>
+    <li>Parallel agent execution for independent sub-tasks.</li>
+    <li>Tracing and evaluation patterns specific to multi-agent.</li>
+    <li>Cost models for multi-agent at three traffic tiers.</li>
+    <li>Production failure modes — loops, runaways, deadlocks — and how to prevent them.</li>
+  </ul>
+
+</TopicShell>

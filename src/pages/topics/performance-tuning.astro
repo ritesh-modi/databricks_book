@@ -1,0 +1,146 @@
+---
+import TopicShell from '../../components/TopicShell.astro';
+import BookFigure from '../../components/BookFigure.astro';
+
+const faqs = [
+  { q: 'What is Photon and when does it actually help?', a: 'Photon is the C++ vectorized execution engine that replaces Spark\'s JVM execution for supported operators. It typically delivers 2-3× speedup on SQL-heavy workloads against Delta tables. It helps less on UDF-heavy pipelines and not at all when the bottleneck is shuffle or I/O. The default in 2026 is: leave Photon on; the wins are real and consistent on SQL-style work.' },
+  { q: 'How do I know if my query is using Photon?', a: 'The Spark UI marks Photon-accelerated nodes explicitly. Look for "PhotonResultStage" or "PhotonHashAggregate" in the physical plan. If your query is mostly non-Photon nodes — usually because of UDFs or unsupported operators — that\'s your tuning lead.' },
+  { q: 'When should I use Liquid Clustering vs partitioning?', a: 'Default to Liquid Clustering in 2026. Traditional partitioning by date/region is brittle — wrong cardinality kills performance — and requires upfront design. Liquid Clustering adapts as data arrives, supports multiple clustering keys, and handles skew. Use partitioning only for very large tables with stable, low-cardinality partition keys where you need partition-level operations.' },
+  { q: 'What is Predictive Optimization?', a: 'A UC-level feature that automatically runs OPTIMIZE, VACUUM, and ANALYZE on managed tables when Databricks predicts the benefit exceeds the cost. You enable it once per catalog; the platform handles the rest. The "did anyone run optimize on this table this quarter?" question goes away.' },
+  { q: 'My SDP pipeline is slow. Where do I look first?', a: 'In order: (1) is the source rate higher than the pipeline can keep up with — check the Lakeflow Pipeline UI for backlog; (2) are the silver-layer transformations doing per-row UDFs that Photon can\'t accelerate; (3) is the gold-layer materialized view doing full refresh when it could be incremental; (4) is the compute size right — serverless usually self-tunes, classic clusters often don\'t.' },
+  { q: 'What about caching?', a: "Delta Cache (SSD-backed) is on by default on most compute. Disk Cache is automatic. The classic Spark `.cache()` / `.persist()` on RDDs is rarely the right answer in 2026 — almost always you want the data in a Delta table with the right clustering and let the engine cache the reads transparently." },
+];
+
+const relatedTopics = [
+  { slug: 'unity-catalog', label: 'Unity Catalog' },
+  { slug: 'lakeflow-sdp', label: 'Lakeflow SDP' },
+  { slug: 'lakehouse', label: 'Lakehouse Architecture' },
+  { slug: 'lakeflow-jobs', label: 'Lakeflow Jobs' },
+];
+---
+
+<TopicShell
+  title="Performance Tuning on Databricks: Photon, Liquid Clustering, Predictive Optimization (2026)"
+  metaTitle="Databricks Performance Tuning (2026): Photon, Liquid Clustering, PO"
+  description="A practitioner guide to performance tuning on Databricks in 2026 — Photon, Liquid Clustering, Predictive Optimization, Delta Cache, and the diagnosis loop that finds bottlenecks faster than reading the Spark UI."
+  keywords={[
+    'databricks performance tuning',
+    'databricks photon',
+    'liquid clustering',
+    'predictive optimization',
+    'databricks delta cache',
+    'databricks optimize zorder',
+    'databricks query performance',
+    'spark ui photon',
+    'databricks tuning 2026',
+    'databricks skew',
+  ]}
+  volume="v3"
+  intro="Performance tuning on Databricks in 2026 is largely a matter of letting the platform do its job — Photon for execution, Liquid Clustering for layout, Predictive Optimization for maintenance. What's left is the small set of cases where the defaults don't fit, and the diagnostic loop that gets you to the answer. This guide is the practitioner-level shape: what to enable, what to leave alone, and where to look when something is slow."
+  faqs={faqs}
+  relatedTopics={relatedTopics}
+>
+  <p>
+    The Spark performance-tuning literature is enormous and mostly dated. On Databricks in 2026, the
+    short version is: Photon execution is the default, Liquid Clustering is the layout strategy,
+    Predictive Optimization runs OPTIMIZE/VACUUM automatically, Disk Cache is transparent. If your
+    workload is slow despite all of that, you have a real problem to diagnose — not a default to flip.
+  </p>
+
+  <h2>Photon: what it does and what it doesn't</h2>
+  <p>
+    Photon is a C++ vectorized engine that executes supported operators outside the JVM. On Delta-table
+    SQL-style workloads (joins, aggregations, filters, projections), it routinely delivers 2-3×
+    speedup. On UDF-heavy code, it stops helping because the UDFs run back in the JVM. On
+    shuffle-bound queries, Photon helps the per-task cost but doesn't make the shuffle smaller.
+  </p>
+  <p>
+    The diagnostic question is "what fraction of my query's wall-clock time is in Photon nodes versus
+    not?" The Spark UI's physical plan view is the answer. If Photon coverage is high and the query
+    is still slow, the bottleneck is elsewhere — shuffle, I/O, or skew.
+  </p>
+
+  <BookFigure
+    src="/images/figures/ch29_fig1_zorder_vs_liquid.png"
+    alt="Z-Order vs Liquid Clustering: same data, different layout — Z-Order clumps where historical queries hit; Liquid keeps density even"
+    caption="Z-Order vs Liquid Clustering, same data, different layout. Z-Order is static; Liquid adapts to actual queries via Predictive Optimization."
+    source="Figure 29.1 · Volume 3, Chapter 29"
+  />
+
+  <h2>Liquid Clustering: the layout that doesn't require upfront design</h2>
+  <p>
+    Traditional Hive-style partitioning has a fundamental problem: you have to pick the right column
+    upfront. Pick wrong (too high cardinality, skewed) and performance degrades. Liquid Clustering
+    sidesteps this. You declare one or more clustering keys; Databricks reorganizes the table over
+    time to cluster by those keys without the rigid partition structure.
+  </p>
+  <p>
+    The 2026 rule: default to Liquid Clustering for new tables. Use partitioning only when you
+    specifically need partition-level operations (e.g., bulk delete by date partition for retention)
+    or when the table is so large that partition pruning is the dominant performance lever and the
+    partition column is genuinely low-cardinality and stable.
+  </p>
+
+  <h2>Predictive Optimization: the maintenance loop that runs itself</h2>
+  <p>
+    OPTIMIZE compacts small files. VACUUM deletes stale files past the retention threshold. ANALYZE
+    refreshes statistics. Historically, teams set up notebooks or jobs to run all three on a schedule
+    — and forgot to maintain them. Predictive Optimization handles it: enable once per UC catalog,
+    and Databricks runs the right operation on each managed table when the predicted benefit exceeds
+    the cost.
+  </p>
+  <p>
+    You still write OPTIMIZE manually when you have a specific reason — a known hotspot, a bulk
+    load that produced many small files. But the maintenance default is "the platform handles it,"
+    not "the platform team handles it."
+  </p>
+
+  <h2>The diagnostic loop</h2>
+  <p>
+    When something is slow, the order is:
+  </p>
+  <ol>
+    <li>
+      Check the <strong>Spark UI's query profile</strong> — which stage is taking the time? Is it
+      shuffle, scan, compute?
+    </li>
+    <li>
+      Check <strong>Photon coverage</strong> — is most of the query running in Photon? If not, find
+      the non-Photon nodes and see if they're UDFs or unsupported operators that have rewrites
+      available.
+    </li>
+    <li>
+      Check <strong>data layout</strong> — too many small files? Wrong clustering keys? Skew on the
+      join key?
+    </li>
+    <li>
+      Check <strong>compute</strong> — is the cluster sized right? Is autoscaling kicking in? Is
+      serverless the right choice?
+    </li>
+    <li>
+      Check <strong>cache hit rate</strong> — is the same data being read from cloud storage on
+      every query? Disk Cache should be catching it.
+    </li>
+  </ol>
+  <p>
+    In production, steps 1-3 cover ~80% of cases. Step 4 is usually cluster policy hygiene. Step 5
+    matters most when you have a SQL Warehouse serving dashboards.
+  </p>
+
+  <h2>SQL Warehouses: the analytics performance story</h2>
+  <p>
+    Serverless SQL warehouses in 2026 are the right answer for almost all analytics-style workloads.
+    They start in seconds, share a result cache across users, autoscale concurrency, and run Photon
+    by default. The legacy "pro" warehouses still exist for workloads that need specific networking
+    or runtime versions. Classic warehouses (non-Photon) are obsolete for most cases.
+  </p>
+
+  <h2>What's in Volume 3 on this</h2>
+  <p>
+    Chapter 29 covers Liquid Clustering and Predictive Optimization in depth. Chapter 36 is the
+    dedicated performance tuning chapter — Photon, the Spark UI, query profile reading, layout
+    decisions, the diagnostic loop above with three worked examples (a slow SDP pipeline, a slow SQL
+    dashboard, a slow ML training job). Chapter 24 covers compute selection, which is the upstream
+    decision that prevents most of the tuning questions in the first place.
+  </p>
+</TopicShell>

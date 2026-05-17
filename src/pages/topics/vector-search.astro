@@ -1,0 +1,176 @@
+---
+import TopicShell from '../../components/TopicShell.astro';
+
+const faqs = [
+  { q: 'What is Mosaic AI Vector Search?', a: "Mosaic AI Vector Search is Databricks' native vector database. It indexes data directly from Delta tables, auto-syncs when source data changes, inherits Unity Catalog governance, and integrates with Databricks Foundation Model APIs for embeddings and generation." },
+  { q: 'Does it support hybrid search?', a: "Yes. Hybrid search combines dense vector retrieval with keyword (BM25) retrieval, then re-ranks. For domains with technical terminology, identifiers, or exact-match needs, hybrid usually beats pure vector search. The 2026 release makes hybrid the default for most index types." },
+  { q: 'How do I choose an embedding model?', a: "Three factors: dimensionality (smaller = cheaper at scale), recall on your domain (test it; don't trust benchmarks), and latency tolerance. For general text in 2026, BGE M3 and Mosaic's MXBai-large are strong defaults. For code, specialized models still win. The book has benchmark results on three domains." },
+  { q: 'What is the cost model?', a: 'Two main components: (1) embedding generation at ingestion time, billed per token; (2) index serving DBUs, billed by index size and traffic. Storage is incidental. A 10M-document index serving moderate traffic typically costs hundreds, not thousands, of dollars per month — but it scales non-linearly above that.' },
+  { q: 'Can I update or delete individual documents?', a: 'Yes. Delta sync mode keeps the index in lockstep with the source Delta table — inserts, updates, and deletes propagate automatically. Direct vector index mode requires you to manage upserts yourself but gives finer control.' },
+  { q: 'How does it handle multi-tenancy?', a: 'Through Unity Catalog access controls plus metadata filtering. Documents carry tenant identifiers; queries filter by tenant ID before vector retrieval. For strict isolation, use separate indexes per tenant. For soft isolation, filtered shared indexes are fine.' },
+];
+
+const relatedTopics = [
+  { slug: 'rag-with-databricks', label: 'RAG on Databricks' },
+  { slug: 'lakehouse', label: 'Lakehouse Architecture' },
+  { slug: 'agentbricks', label: 'AgentBricks' },
+];
+---
+
+<TopicShell
+  title="Mosaic AI Vector Search: A Practitioner's Guide"
+  metaTitle="Mosaic AI Vector Search (2026): Indexes, Embeddings, Hybrid Search, Cost"
+  description="Complete 2026 guide to Mosaic AI Vector Search on Databricks — index design, embedding model selection, hybrid retrieval, performance tuning, and the cost model that actually predicts your bill."
+  keywords={[
+    'mosaic ai vector search',
+    'databricks vector search',
+    'databricks vector database',
+    'vector search databricks',
+    'mosaic ai vector',
+    'databricks embedding',
+    'hybrid search databricks',
+    'vector index databricks',
+    'unity catalog vector search',
+    'mosaic ai 2026',
+    'databricks vector store',
+    'vector search cost',
+  ]}
+  intro="Vector search is the substrate of every Databricks RAG and agent system. Mosaic AI Vector Search is the native option — and in most cases the right one. This guide covers Delta-sync vs direct-access indexes, embedding choice, hybrid retrieval, and the operational mechanics."
+  volume="v4"
+  faqs={faqs}
+  relatedTopics={relatedTopics}
+>
+
+  <p>
+    Of all the new primitives Databricks shipped over the past few years, Mosaic AI Vector Search is
+    the one with the highest leverage. It removed an entire integration tax — the constant pain of
+    keeping an external vector DB in sync with the Delta tables that fed it. For Databricks-resident
+    data in 2026, the default is to use Vector Search and ask "do I have a reason not to?"
+  </p>
+
+  <h2>The architectural pieces</h2>
+
+  <p>
+    A Vector Search deployment has three pieces:
+  </p>
+
+  <ol>
+    <li><strong>The endpoint</strong> — a serving cluster that hosts one or more indexes.</li>
+    <li><strong>The index</strong> — the queryable representation of vectors plus metadata.</li>
+    <li><strong>The source</strong> — either a Delta table (Delta Sync index) or your own upsert calls (Direct Vector Access index).</li>
+  </ol>
+
+  <p>
+    Delta Sync is the default and right answer for most cases. You point an index at a Delta table
+    with a text column, choose an embedding model, and Databricks handles the rest — embedding,
+    indexing, syncing on source changes. Updates propagate within minutes.
+  </p>
+
+  <p>
+    Direct Vector Access is the escape hatch. You manage the embeddings and call <code>upsert</code>
+    yourself. Use it when your embedding pipeline lives elsewhere, or when source data isn't
+    naturally a Delta table.
+  </p>
+
+  <h2>Index types: which to choose</h2>
+
+  <p>
+    Two index variants matter for production:
+  </p>
+
+  <ul>
+    <li><strong>Storage-optimized</strong> — designed for very large indexes (100M+ rows) with moderate QPS. Lower DBU cost per row, higher latency per query. Right answer for "we have a lot of data and search isn't the main bottleneck."</li>
+    <li><strong>Performance-optimized</strong> — lower latency, higher QPS, higher cost per row. Right answer for user-facing applications with strict latency requirements.</li>
+  </ul>
+
+  <p>
+    Default to storage-optimized. Switch to performance-optimized when you have actual latency
+    measurements showing you need it, not because the docs sounded faster.
+  </p>
+
+  <h2>Embedding model selection</h2>
+
+  <p>
+    The right embedding model is workload-dependent. The 2026 defaults that work for most teams:
+  </p>
+
+  <ul>
+    <li><strong>General text</strong>: BGE-M3 or Mosaic MXBai-Embed-Large. Strong recall, multilingual, well-documented.</li>
+    <li><strong>Code</strong>: BGE-Code or specialized code-embedding models. General text embeddings drop significantly on code.</li>
+    <li><strong>Multi-modal</strong>: CLIP-derived models. Vector Search supports image vectors directly in the latest release.</li>
+    <li><strong>High scale, cost-sensitive</strong>: Smaller open-source embedding models (e.g., MiniLM at 384 dims). Lower recall but 4-10× cheaper.</li>
+  </ul>
+
+  <p>
+    Test on your data. The MTEB leaderboard is a starting point, not a verdict. The book runs three
+    embedding models on three benchmark corpora to show how rankings shift by domain.
+  </p>
+
+  <h2>Hybrid search is usually the right default</h2>
+
+  <p>
+    Pure vector search is good at semantic similarity, bad at exact matches. "Show me documents about
+    Q3 2025" works fine for semantic intent but fails on the literal token <code>Q3 2025</code>.
+    Identifiers, product codes, dates, technical terms — vectors smooth them out.
+  </p>
+
+  <p>
+    Hybrid search runs both vector retrieval and keyword (BM25) retrieval, then combines via
+    reciprocal rank fusion. The penalty is a small latency increase. The benefit is a measurable
+    recall improvement on most real workloads.
+  </p>
+
+  <p>
+    On Mosaic AI Vector Search, enabling hybrid is one parameter. Enable it, measure, keep it on if
+    the eval improves.
+  </p>
+
+  <h2>Metadata filtering and where it pays off</h2>
+
+  <p>
+    Vector Search supports filtering on metadata columns at query time — by tenant, by date range,
+    by document type. The filter is applied during retrieval, not after. This matters more than it
+    sounds: post-filtering a top-k vector retrieval gives you fewer-than-k results when the filter
+    is restrictive, which silently degrades quality.
+  </p>
+
+  <p>
+    Use metadata filtering generously. Multi-tenant systems should always filter by tenant ID.
+    Time-bounded queries should filter by date. The performance penalty is usually negligible
+    compared to the quality improvement.
+  </p>
+
+  <h2>The cost model in practice</h2>
+
+  <p>
+    Vector Search costs come from three places:
+  </p>
+
+  <ol>
+    <li><strong>Embedding generation at ingestion</strong>. Token-priced. For a one-time backfill, this is your biggest line item. For ongoing sync, it's incremental.</li>
+    <li><strong>Index serving DBUs</strong>. Charged by the hour the endpoint runs, regardless of QPS. Small indexes can share endpoints.</li>
+    <li><strong>Query-time embedding</strong>. Each query is embedded before search. Negligible per query, real at high QPS.</li>
+  </ol>
+
+  <p>
+    The cost optimization that usually wins: share endpoints across multiple indexes when QPS is
+    moderate. Don't run a dedicated endpoint for a 5-QPS workload.
+  </p>
+
+  <h2>What the book covers</h2>
+
+  <p>
+    The Vector Search chapter in <em>Databricks for Practitioners</em> covers:
+  </p>
+
+  <ul>
+    <li>End-to-end ingestion pipeline with idempotent re-indexing.</li>
+    <li>Embedding model benchmarking on three domains.</li>
+    <li>Hybrid search tuning — when to weight vector vs keyword.</li>
+    <li>Multi-tenant index design patterns.</li>
+    <li>Performance optimization: chunking, batch sizes, endpoint sizing.</li>
+    <li>Cost model with three traffic-tier examples.</li>
+    <li>Migration paths from external vector stores (Pinecone, Weaviate, pgvector).</li>
+  </ul>
+
+</TopicShell>

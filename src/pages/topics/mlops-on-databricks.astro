@@ -1,0 +1,202 @@
+---
+import TopicShell from '../../components/TopicShell.astro';
+import BookFigure from '../../components/BookFigure.astro';
+
+const faqs = [
+  { q: 'What is MLOps on Databricks in 2026?', a: 'MLOps on Databricks is the operational discipline applied to ML and GenAI workloads on the platform — CI/CD for models, model serving, monitoring, lineage, and the governance that lets you ship and operate AI systems with the same rigor as any other production code.' },
+  { q: 'How do I version control my Databricks notebooks and ML code?', a: 'Databricks Repos integrates with GitHub, GitLab, Azure DevOps, and Bitbucket. Notebooks live as code in your repo. Production deploys come from version-controlled bundles, not interactive notebooks. Asset Bundles (DABs) are the recommended packaging in 2026.' },
+  { q: 'How does model deployment work?', a: 'Trained models are registered to the Unity Catalog Model Registry. Deployment promotes a registered model version to a Model Serving endpoint. Standard patterns — blue-green, traffic splitting, canary — are supported. Rollback is a single API call.' },
+  { q: 'How do I monitor production models?', a: 'Three layers: (1) serving-level metrics (latency, error rate, throughput) via the Databricks UI; (2) prediction monitoring (output distribution, prediction drift) via Lakehouse Monitoring; (3) quality monitoring against ground truth when available. Alerts wire into the standard incident systems.' },
+  { q: 'How is GenAI MLOps different from traditional MLOps?', a: "Most differences are in evaluation rather than process. Classical ML monitors precision/recall; GenAI monitors faithfulness, relevance, and groundedness — which require LLM-as-judge evaluation rather than direct metric calculation. The pipeline shape is similar; the metrics are different. MLflow Evaluate handles both." },
+  { q: 'What is a Databricks Asset Bundle (DAB)?', a: 'An Asset Bundle is the recommended way to package Databricks projects — notebooks, workflows, ML pipelines, model deployments — as a versionable, deployable unit. DABs replace the older mix of ad-hoc deployment scripts with a single declarative format.' },
+];
+
+const relatedTopics = [
+  { slug: 'mlflow', label: 'MLflow' },
+  { slug: 'feature-stores', label: 'Feature Stores' },
+  { slug: 'agentbricks', label: 'AgentBricks' },
+  { slug: 'rag-with-databricks', label: 'RAG' },
+];
+---
+
+<TopicShell
+  title="MLOps on Databricks: The 2026 Operational Playbook"
+  metaTitle="MLOps on Databricks (2026): CI/CD, Serving, Monitoring, Asset Bundles"
+  description="Complete 2026 guide to MLOps on Databricks — CI/CD with Asset Bundles, model serving, monitoring, GenAI evaluation, and the operational discipline that separates pilots from production."
+  keywords={[
+    'mlops databricks',
+    'databricks mlops',
+    'mlops 2026',
+    'databricks asset bundles',
+    'databricks model serving',
+    'databricks monitoring',
+    'genaiops databricks',
+    'llmops databricks',
+    'ci cd ml databricks',
+    'lakehouse monitoring',
+    'databricks production ml',
+  ]}
+  intro="MLOps is the discipline that turns Databricks notebooks into production AI systems. In 2026 the playbook centers on Asset Bundles, Unity Catalog, Model Serving with the AI Gateway, alias-driven promotion, and Lakehouse Monitoring. This is the operational reality, written for engineers who have to make it work."
+  volume="v4"
+  faqs={faqs}
+  relatedTopics={relatedTopics}
+>
+
+  <p>
+    Most ML projects fail at the same place: the gap between a working notebook and a system that
+    runs every day, recovers from its own failures, and produces consistent answers under
+    changing data. MLOps is the discipline that closes that gap. On Databricks in 2026, the
+    toolchain has consolidated enough that there's now a defensible reference implementation.
+  </p>
+
+  <h2>The four production responsibilities</h2>
+
+  <p>
+    Independent of platform, a production ML system has four responsibilities:
+  </p>
+
+  <ol>
+    <li><strong>Reproducibility</strong> — anyone on the team can rebuild a model bit-for-bit from version control.</li>
+    <li><strong>Deployment</strong> — models reach production through a versioned, reviewable process.</li>
+    <li><strong>Monitoring</strong> — production behavior is observable and changes trigger alerts.</li>
+    <li><strong>Governance</strong> — who deployed what, when, and under what authority is recorded.</li>
+  </ol>
+
+  <p>
+    On Databricks 2026, each maps to specific primitives.
+  </p>
+
+  <h2>Reproducibility: Asset Bundles and the Repo</h2>
+
+  <p>
+    The reproducibility story starts with code in version control. Databricks Repos provides the
+    Git integration — notebooks live as files in GitHub or equivalent. Asset Bundles (DABs)
+    provide the packaging: a declarative YAML manifest that describes notebooks, workflows, model
+    deployments, and their dependencies.
+  </p>
+
+  <p>
+    A bundle is the unit of deployment. The same bundle that an engineer runs locally is what gets
+    deployed to staging and then production. No "but it worked in my notebook" — if it works in
+    your bundle, it works in CI, it works in prod.
+  </p>
+
+  <p>
+    The 2026 pattern: every project is a bundle. Notebooks are in source control. Deployment is
+    <code>databricks bundle deploy</code> from CI, not a click in the UI.
+  </p>
+
+  <BookFigure
+    src="/images/figures/ch48_fig1_alias_promotion.png"
+    alt="UC model with many immutable versions; three aliases (@dev @staging @prod) point at versions; promotion is alias movement"
+    caption="Promotion is alias movement, not redeploy. Every caller reads its alias, never a version number. Change the alias, change what every caller sees — including rollback, in seconds."
+    source="Figure 48.1 · Volume 4, Chapter 48"
+  />
+
+  <h2>Deployment: Model Registry → Model Serving</h2>
+
+  <p>
+    The deployment pipeline:
+  </p>
+
+  <ol>
+    <li>Training job logs a model run with <a href="/topics/mlflow/">MLflow</a>.</li>
+    <li>If evaluation passes, the model is registered to the Unity Catalog Model Registry.</li>
+    <li>An alias (e.g., <code>@candidate</code>) is set on the new version.</li>
+    <li>A staging deployment promotes the candidate to <code>@staging</code> and routes a slice of traffic.</li>
+    <li>If staging metrics hold, promotion to <code>@production</code> is a single alias move.</li>
+  </ol>
+
+  <p>
+    Rollback works the same way: move the <code>@production</code> alias back to the previous
+    version. Model Serving picks up the change without a restart. Standard patterns — blue-green,
+    canary, traffic splitting — all supported.
+  </p>
+
+  <p>
+    The Unity Catalog piece matters here. The registry isn't a side database; it's a first-class
+    catalog object with the same ACLs and lineage as your data. "Who deployed what" is auditable
+    out of the box.
+  </p>
+
+  <BookFigure
+    src="/images/figures/ch49_fig2_monitor_retrain.svg"
+    alt="The monitor-to-retrain loop: data and model monitors trigger evaluation, which gates an automated retrain job"
+    caption="The monitoring-to-retraining loop. Drift detection on input features and performance drift on the target trigger an automated retrain — but only after the gate evaluation says the retrain will improve things."
+    source="Figure 49.2 · Volume 4, Chapter 49"
+  />
+
+  <h2>Monitoring: three layers, three different problems</h2>
+
+  <p>
+    Monitoring needs to answer three distinct questions:
+  </p>
+
+  <ul>
+    <li><strong>Is the system up?</strong> — latency, error rate, throughput. Standard SRE metrics. Surfaced in the Model Serving UI and Databricks SQL warehouses.</li>
+    <li><strong>Has the input distribution shifted?</strong> — input drift detection. Lakehouse Monitoring continuously computes statistics on serving requests and compares to baseline. Alerts fire when drift exceeds threshold.</li>
+    <li><strong>Are the outputs still correct?</strong> — quality monitoring. Hard in general because ground truth is delayed or unavailable. Patterns: human review on samples, LLM-as-judge for GenAI workloads, downstream KPI tracking.</li>
+  </ul>
+
+  <p>
+    Skip layer 1 and you don't know when the service is down. Skip layer 2 and you don't know when
+    the world changed. Skip layer 3 and you don't know when your model started giving worse
+    answers. They are not substitutes for each other.
+  </p>
+
+  <h2>GenAIOps: classical MLOps with different metrics</h2>
+
+  <p>
+    The MLOps pattern for LLM-backed systems (RAG, agents) is structurally the same as for classical
+    ML. The metrics change:
+  </p>
+
+  <ul>
+    <li>Instead of precision/recall, you track <strong>answer relevance, faithfulness, groundedness</strong>.</li>
+    <li>Instead of confusion matrices, you track <strong>trajectory correctness</strong> for agents.</li>
+    <li>Instead of model files, you version <strong>prompts, system messages, and tool definitions</strong>.</li>
+  </ul>
+
+  <p>
+    MLflow Evaluate handles both. The pipeline shape is the same. The deployment story is the same.
+    The discipline is the same. What's different is the failure mode: an LLM system can be wrong
+    in plausible-sounding ways that aren't caught by latency or error-rate monitoring. The fix is to
+    make evaluation a first-class part of the production loop, not a one-time pre-launch activity.
+  </p>
+
+  <h2>CI/CD pattern that works in 2026</h2>
+
+  <p>
+    The pipeline pattern most production teams converge on:
+  </p>
+
+  <ol>
+    <li>Code changes go through pull request.</li>
+    <li>CI runs unit tests, linting, type checks.</li>
+    <li>CI deploys the bundle to a staging workspace and runs integration tests.</li>
+    <li>CI runs the full evaluation suite on a held-out set. Block merge if regression.</li>
+    <li>On merge to main, CI deploys to production with the new model version as <code>@candidate</code>.</li>
+    <li>Manual or automated promotion moves <code>@candidate</code> to <code>@production</code>.</li>
+    <li>Lakehouse Monitoring watches for drift; alerts trigger investigation.</li>
+  </ol>
+
+  <p>
+    Nothing exotic. The point is having all of it, every time, by default.
+  </p>
+
+  <h2>What the book covers</h2>
+
+  <p>
+    The MLOps chapter in <em>Databricks for Practitioners</em> covers:
+  </p>
+
+  <ul>
+    <li>A reference Asset Bundle for an ML project, end-to-end.</li>
+    <li>CI/CD pipeline in GitHub Actions and Azure DevOps.</li>
+    <li>Model Serving with blue-green deployment and rollback.</li>
+    <li>Lakehouse Monitoring setup with drift alerts.</li>
+    <li>GenAIOps patterns for RAG and agent workloads.</li>
+    <li>The governance checklist for audit-grade ML deployments.</li>
+  </ul>
+
+</TopicShell>

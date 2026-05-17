@@ -1,0 +1,107 @@
+---
+import Layout from '../layouts/Layout.astro';
+import BuyCTA from '../components/BuyCTA.astro';
+import { volumes } from '../data/book';
+
+const v3Chapters = [
+  { range: 'Part I (Ch 22–24)', title: 'Platform Foundations', desc: 'From OSS Spark to the Databricks Data Intelligence Platform. Workspaces, notebooks, Git folders, the Assistant. Compute: classic, serverless, SQL warehouses, AI Runtime, GPUs.' },
+  { range: 'Part II (Ch 25–30)', title: 'Unity Catalog & Governance', desc: 'UC architecture, the three-level namespace, volumes. Access control with ABAC and governed tags. Identity, service principals, OAuth, secret scopes. Managed tables with Delta + Iceberg/UniForm. Liquid Clustering + Predictive Optimization. System tables and HMS → UC migration.' },
+  { range: 'Part III (Ch 31–36)', title: 'Data Engineering at Scale', desc: 'Ingestion with Auto Loader and Lakeflow Connect. Lakeflow SDP (Spark Declarative Pipelines). Lakeflow Jobs orchestration. Declarative Automation Bundles, CLI, SDK, Terraform. CI/CD with GitHub Actions + OIDC. Performance tuning with Photon.' },
+  { range: 'Part IV (Ch 37)', title: 'Bridge into Volume 4', desc: 'UC Metrics and the data-product mindset that makes the AI layer in Volume 4 trustworthy.' },
+];
+
+const v4Chapters = [
+  { range: 'Part V (Ch 38–42)', title: 'Analytics & Natural-Language BI', desc: 'Databricks SQL in production. External BI (Tableau, Power BI, Looker, dbt). AI/BI Dashboards. AI/BI Genie. The AI SQL function family — ai_query, ai_parse_document, ai_classify, ai_extract, ai_gen, ai_forecast, vector_search.' },
+  { range: 'Part VI (Ch 43–46)', title: 'Mosaic AI: Models & Retrieval', desc: 'Model Serving and the AI Gateway. Foundation Model APIs and external models. Vector Search and RAG patterns. MLflow 3 — experiments, UC Model Registry, traces, evaluation.' },
+  { range: 'Part VII (Ch 47–49)', title: 'The ML Lifecycle', desc: 'Feature Store on Unity Catalog. MLOps — promotion as alias movement, champion/challenger, traffic splitting. Lakehouse Monitoring for data and model drift.' },
+  { range: 'Part VIII (Ch 50)', title: 'Distributed Training', desc: 'TorchDistributor, DeepSpeed, Ray on Databricks, and serverless GPU for fine-tuning.' },
+  { range: 'Part IX (Ch 51–52)', title: 'Agentic AI', desc: 'Agent Bricks — classification and information extraction. The Multi-Agent Supervisor with MCP, agent evaluation, and deployment.' },
+  { range: 'Part X (Ch 53–54)', title: 'Operational Data + Capstone', desc: 'Lakebase — managed Postgres in the lakehouse. End-to-end retail-intelligence capstone that pulls every V3 and V4 piece together.' },
+  { range: 'Part XI (Ch 55)', title: 'Close', desc: 'Certification paths (Data Engineer Associate/Professional, ML Associate/Professional) and what comes next on the platform.' },
+];
+---
+
+<Layout
+  title="Inside the Books — Tables of Contents and Sample Topics"
+  description="Full tables of contents for both volumes of Databricks for Practitioners — Volume 3 (The Production Lakehouse Playbook) and Volume 4 (The AI Lakehouse Playbook). Plus free sample topic pages."
+  keywords={['databricks for practitioners toc', 'databricks book contents', 'databricks book preview', 'free databricks chapter', 'databricks book sample']}
+>
+  <section class="max-w-4xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-12">
+    <p class="text-sm font-semibold text-[var(--color-accent)] uppercase tracking-wider">Inside the books</p>
+    <h1 class="font-display text-4xl sm:text-5xl font-extrabold mt-3 tracking-tight">
+      Two volumes. {volumes.v3.chapters + volumes.v4.chapters} chapters. ~{volumes.v3.pages + volumes.v4.pages} pages of practitioner depth.
+    </h1>
+    <p class="mt-6 text-lg text-[var(--color-ink-soft)] leading-relaxed">
+      Every chapter is opinionated, hands-on, and written for engineers who already know the
+      basics. No "what is Spark." Yes "here is the exact pattern that works at scale, here is the
+      failure mode, here is what it costs."
+    </p>
+  </section>
+
+  <section class="max-w-4xl mx-auto px-5 sm:px-8 pb-16">
+    <div class="flex items-baseline justify-between mb-6 flex-wrap gap-2">
+      <div>
+        <p class="text-xs uppercase tracking-wider font-bold text-[var(--color-accent-deep)]">
+          Volume {volumes.v3.volume} · {volumes.v3.chapterRange} · ~{volumes.v3.pages} pages
+        </p>
+        <h2 class="font-display text-2xl font-extrabold mt-1">{volumes.v3.subtitle}</h2>
+      </div>
+      <a href={`/buy/#${volumes.v3.key}`} class="text-sm font-semibold text-[var(--color-accent)]">Get Volume 3 →</a>
+    </div>
+    <ol class="space-y-4">
+      {v3Chapters.map((p) => (
+        <li class="flex gap-5 p-5 bg-white rounded-2xl border border-[var(--color-line)]">
+          <div class="flex-shrink-0 w-24 text-xs font-bold uppercase tracking-wider text-[var(--color-accent-deep)] pt-1">
+            {p.range}
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="font-display text-lg font-bold leading-snug">{p.title}</p>
+            <p class="mt-1 text-[var(--color-ink-soft)] leading-relaxed">{p.desc}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="max-w-4xl mx-auto px-5 sm:px-8 pb-16">
+    <div class="flex items-baseline justify-between mb-6 flex-wrap gap-2">
+      <div>
+        <p class="text-xs uppercase tracking-wider font-bold text-[var(--color-accent-deep)]">
+          Volume {volumes.v4.volume} · {volumes.v4.chapterRange} · ~{volumes.v4.pages} pages
+        </p>
+        <h2 class="font-display text-2xl font-extrabold mt-1">{volumes.v4.subtitle}</h2>
+      </div>
+      <a href={`/buy/#${volumes.v4.key}`} class="text-sm font-semibold text-[var(--color-accent)]">Get Volume 4 →</a>
+    </div>
+    <ol class="space-y-4">
+      {v4Chapters.map((p) => (
+        <li class="flex gap-5 p-5 bg-white rounded-2xl border border-[var(--color-line)]">
+          <div class="flex-shrink-0 w-24 text-xs font-bold uppercase tracking-wider text-[var(--color-accent-deep)] pt-1">
+            {p.range}
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="font-display text-lg font-bold leading-snug">{p.title}</p>
+            <p class="mt-1 text-[var(--color-ink-soft)] leading-relaxed">{p.desc}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="max-w-4xl mx-auto px-5 sm:px-8 pb-12">
+    <h2 class="font-display text-2xl font-extrabold mb-4">Free sample topics</h2>
+    <p class="text-[var(--color-ink-soft)] leading-relaxed">
+      Long-form practitioner previews of the book's content are published as free topic guides:
+      <a href="/topics/unity-catalog/" class="text-[var(--color-accent)] font-medium underline">Unity Catalog</a>,
+      <a href="/topics/lakeflow-sdp/" class="text-[var(--color-accent)] font-medium underline">Lakeflow SDP</a>,
+      <a href="/topics/asset-bundles/" class="text-[var(--color-accent)] font-medium underline">Asset Bundles</a>,
+      and <a href="/topics/databricks-cicd/" class="text-[var(--color-accent)] font-medium underline">CI/CD on Databricks</a> from Volume 3.
+      <a href="/topics/rag-with-databricks/" class="text-[var(--color-accent)] font-medium underline">RAG on Databricks</a>,
+      <a href="/topics/agentbricks/" class="text-[var(--color-accent)] font-medium underline">Agent Bricks</a>,
+      <a href="/topics/multi-agent-systems/" class="text-[var(--color-accent)] font-medium underline">Multi-Agent Systems</a>,
+      and <a href="/topics/mlflow/" class="text-[var(--color-accent)] font-medium underline">MLflow 3</a> from Volume 4.
+    </p>
+  </section>
+
+  <BuyCTA />
+</Layout>

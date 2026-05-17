@@ -1,0 +1,195 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  --color-ink: #0f172a;
+  --color-ink-soft: #1e293b;
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-bg: #fafafa;
+  --color-surface: #ffffff;
+
+  /* Databricks brand-inspired but distinct */
+  --color-accent: #ff3621;
+  --color-accent-deep: #c41e0e;
+  --color-accent-soft: #fff1ee;
+  --color-secondary: #1f6feb;
+  --color-warm: #f59e0b;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
+.prose-custom {
+  max-width: 70ch;
+}
+
+.prose-custom h2 {
+  font-family: var(--font-display);
+  font-size: 1.875rem;
+  line-height: 1.25;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--color-ink);
+}
+
+.prose-custom h3 {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+.prose-custom h4 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose-custom p {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  margin-bottom: 1.25rem;
+  color: var(--color-ink-soft);
+}
+
+.prose-custom a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 500;
+}
+
+.prose-custom a:hover {
+  color: var(--color-accent-deep);
+}
+
+.prose-custom code {
+  background: #f1f5f9;
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.92em;
+  font-family: var(--font-mono);
+}
+
+.prose-custom pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.prose-custom pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.prose-custom ul,
+.prose-custom ol {
+  margin: 1rem 0 1.5rem 1.25rem;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--color-ink-soft);
+}
+
+.prose-custom li {
+  margin-bottom: 0.5rem;
+}
+
+.prose-custom li::marker {
+  color: var(--color-accent);
+}
+
+.prose-custom blockquote {
+  border-left: 4px solid var(--color-accent);
+  padding: 0.75rem 1.25rem;
+  margin: 1.5rem 0;
+  background: var(--color-accent-soft);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--color-ink);
+  font-style: italic;
+}
+
+.prose-custom table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+
+.prose-custom th {
+  background: #f8fafc;
+  font-weight: 700;
+  text-align: left;
+  padding: 0.75rem;
+  border: 1px solid var(--color-line);
+}
+
+.prose-custom td {
+  padding: 0.75rem;
+  border: 1px solid var(--color-line);
+}
+
+.prose-custom .book-figure {
+  margin: 2rem 0;
+  padding: 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+}
+
+.prose-custom .book-figure img,
+.prose-custom .book-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 0.5rem;
+}
+
+.prose-custom .book-figure figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  text-align: center;
+  font-style: italic;
+}
+
+.prose-custom .book-figure .figure-source {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-style: normal;
+  color: var(--color-accent-deep);
+  font-weight: 600;
+}

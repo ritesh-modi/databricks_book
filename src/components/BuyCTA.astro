@@ -1,0 +1,112 @@
+---
+import { volumes, type Volume } from '../data/book';
+
+interface Props {
+  /** Pin the CTA to a single volume (used on per-volume topic pages). Omit on series-wide pages. */
+  volume?: 'v3' | 'v4';
+  variant?: 'block' | 'inline';
+  size?: 'md' | 'lg';
+}
+const { volume, variant = 'block', size = 'lg' } = Astro.props;
+
+const padding = size === 'lg' ? 'px-7 py-4' : 'px-5 py-3';
+const text = size === 'lg' ? 'text-base' : 'text-sm';
+const v: Volume | null = volume ? volumes[volume] : null;
+---
+
+{variant === 'block' && v && (
+  <section class="py-16 sm:py-20 bg-[var(--color-ink)] text-white">
+    <div class="max-w-4xl mx-auto px-5 sm:px-8 text-center">
+      <p class="text-sm font-semibold text-[var(--color-accent)] uppercase tracking-wider">
+        {v.shortName}
+      </p>
+      <h2 class="font-display text-3xl sm:text-4xl font-bold mt-3 tracking-tight">
+        {v.fullTitle}
+      </h2>
+      <p class="mt-4 text-lg text-slate-300 max-w-2xl mx-auto">
+        {v.tagline}
+      </p>
+      <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+        <a
+          href={v.amazonUrl}
+          target="_blank"
+          rel="noopener"
+          class={`inline-flex items-center justify-center gap-2 ${padding} rounded-full bg-[var(--color-accent)] text-white font-semibold ${text} hover:bg-[var(--color-accent-deep)] transition-colors`}
+        >
+          Buy Volume {v.volume} on Amazon
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </a>
+        <a
+          href="/buy/"
+          class={`inline-flex items-center justify-center gap-2 ${padding} rounded-full bg-white/10 text-white font-semibold ${text} hover:bg-white/20 transition-colors`}
+        >
+          See both volumes
+        </a>
+      </div>
+      <p class="mt-6 text-xs text-slate-400">
+        ${v.price.kindle.toFixed(2)} Kindle · ${v.price.paperback.toFixed(2)} Paperback · {v.chapters} chapters · ~{v.pages} pages
+      </p>
+    </div>
+  </section>
+)}
+
+{variant === 'block' && !v && (
+  <section class="py-16 sm:py-20 bg-[var(--color-ink)] text-white">
+    <div class="max-w-5xl mx-auto px-5 sm:px-8">
+      <div class="text-center mb-10">
+        <p class="text-sm font-semibold text-[var(--color-accent)] uppercase tracking-wider">Two volumes</p>
+        <h2 class="font-display text-3xl sm:text-4xl font-bold mt-3 tracking-tight">
+          Get the series.
+        </h2>
+        <p class="mt-4 text-lg text-slate-300 max-w-2xl mx-auto">
+          Volume 3 is the platform foundation. Volume 4 is the AI build-out. Read either standalone, or both for the complete picture.
+        </p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-5">
+        {(['v3', 'v4'] as const).map((key) => {
+          const vol = volumes[key];
+          return (
+            <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+              <p class="text-xs uppercase tracking-wider text-[var(--color-accent)] font-bold">
+                Volume {vol.volume}
+              </p>
+              <p class="font-display text-xl font-extrabold mt-2 leading-snug">{vol.subtitle}</p>
+              <p class="mt-3 text-sm text-slate-300 leading-relaxed">{vol.tagline}</p>
+              <a
+                href={vol.amazonUrl}
+                target="_blank"
+                rel="noopener"
+                class={`mt-5 inline-flex items-center justify-center gap-2 ${padding} rounded-full bg-[var(--color-accent)] text-white font-semibold ${text} hover:bg-[var(--color-accent-deep)] transition-colors`}
+              >
+                Buy on Amazon
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+              <p class="mt-3 text-xs text-slate-400">
+                ${vol.price.kindle.toFixed(2)} Kindle · ${vol.price.paperback.toFixed(2)} Paperback · {vol.chapters} chapters
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+)}
+
+{variant === 'inline' && (
+  <a
+    href={v ? v.amazonUrl : '/buy/'}
+    target={v ? '_blank' : undefined}
+    rel={v ? 'noopener' : undefined}
+    class={`inline-flex items-center gap-2 ${padding} rounded-full bg-[var(--color-accent)] text-white font-semibold ${text} hover:bg-[var(--color-accent-deep)] transition-colors`}
+  >
+    {v ? `Get Volume ${v.volume} on Amazon` : 'Get the books'}
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+    </svg>
+  </a>
+)}

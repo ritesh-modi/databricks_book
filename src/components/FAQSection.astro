@@ -1,0 +1,42 @@
+---
+interface FAQ {
+  q: string;
+  a: string;
+}
+interface Props {
+  faqs: FAQ[];
+  title?: string;
+  subtitle?: string;
+}
+const { faqs, title = 'Frequently asked questions', subtitle } = Astro.props;
+---
+
+<section id="faq" class="py-20 sm:py-24 bg-white border-t border-[var(--color-line)]">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <p class="text-sm font-semibold text-[var(--color-accent)] uppercase tracking-wider">FAQ</p>
+    <h2 class="font-display text-3xl sm:text-4xl font-extrabold mt-2 tracking-tight">
+      {title}
+    </h2>
+    {subtitle && <p class="mt-3 text-[var(--color-ink-soft)]">{subtitle}</p>}
+
+    <div class="mt-10 divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
+      {faqs.map((faq) => (
+        <details class="group py-5">
+          <summary class="flex items-start justify-between gap-4 cursor-pointer list-none">
+            <span class="font-display text-lg font-bold leading-snug pr-4 group-hover:text-[var(--color-accent)] transition-colors">
+              {faq.q}
+            </span>
+            <span class="flex-shrink-0 mt-1 text-[var(--color-accent)] transition-transform group-open:rotate-45">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+              </svg>
+            </span>
+          </summary>
+          <div class="mt-3 text-[var(--color-ink-soft)] leading-relaxed">
+            {faq.a}
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

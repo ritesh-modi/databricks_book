@@ -1,0 +1,182 @@
+---
+import TopicShell from '../../components/TopicShell.astro';
+import BookFigure from '../../components/BookFigure.astro';
+
+const faqs = [
+  { q: 'What is the Databricks Feature Store?', a: 'The Databricks Feature Store (now Unity-Catalog-native as Feature Engineering in Unity Catalog) is the central place to define, share, and serve features for ML models. It enforces consistency between training and serving and removes the most common cause of model degradation in production: feature drift between train and inference time.' },
+  { q: 'What is training-serving skew and how does the feature store prevent it?', a: 'Training-serving skew is when the features your model was trained on differ subtly from the features it sees in production — different aggregation windows, different null handling, different timestamps. The feature store solves this by making the same definition serve both training (offline lookups) and inference (online lookups), removing the chance to drift.' },
+  { q: 'When do I need a feature store?', a: "When more than one model uses the same feature, when a single model needs the same feature at both training and inference time with low latency, or when multiple teams want to share features. If you're building one model and it's tabular only, you may not need one. Most teams that think they don't need one eventually wish they had it." },
+  { q: 'How does online serving work?', a: 'The feature store publishes features to a low-latency online store (Databricks Online Tables in 2026). At inference time, the model fetches features by entity key from the online store. Sub-10ms reads are the target. The offline store remains the source of truth.' },
+  { q: 'How does it integrate with Unity Catalog?', a: 'Feature tables are first-class Unity Catalog objects — three-level naming, ACLs, lineage. The lineage view shows which models consume which features, which is invaluable when deprecating or refactoring a feature.' },
+  { q: 'Can I use features for RAG or agents?', a: "Yes. Features aren't only numerical — a feature can be user profile metadata, document tags, behavioral signals, or anything else that helps personalize an LLM response. For agents that need to know about a user, the feature store is often the right home for that context." },
+];
+
+const relatedTopics = [
+  { slug: 'mlflow', label: 'MLflow Registry' },
+  { slug: 'mlops-on-databricks', label: 'MLOps' },
+  { slug: 'lakehouse', label: 'Lakehouse Architecture' },
+];
+---
+
+<TopicShell
+  title="Databricks Feature Store: The Practitioner's Guide"
+  metaTitle="Databricks Feature Store (2026): Online Tables, Training-Serving Skew, Unity Catalog"
+  description="Practitioner guide to the Databricks Feature Store in 2026 — feature definitions, online and offline serving, Unity Catalog integration, and the operational patterns that prevent training-serving skew."
+  keywords={[
+    'databricks feature store',
+    'databricks feature engineering',
+    'unity catalog feature store',
+    'databricks online tables',
+    'feature store ml',
+    'training serving skew',
+    'mlops feature store',
+    'databricks feature 2026',
+    'feature engineering unity catalog',
+    'online feature serving',
+  ]}
+  intro="The feature store is the part of an ML platform that prevents your model from quietly breaking three months after launch. On Databricks in 2026, it's deeply integrated into Unity Catalog and the broader Lakehouse — with online serving from Lakebase. This guide covers what it solves, how to use it, and when it pays off."
+  volume="v4"
+  faqs={faqs}
+  relatedTopics={relatedTopics}
+>
+
+  <p>
+    The feature store is the most underrated piece of any production ML platform. Engineers tend to
+    discover its value by reverse engineering an outage: the model started misbehaving, the team
+    spent two weeks investigating, and the root cause turned out to be a subtle change in how a
+    feature was computed in inference versus training. The feature store exists to make that class
+    of bug impossible.
+  </p>
+
+  <p>
+    On Databricks in 2026, the feature store has been absorbed into Unity Catalog as "Feature
+    Engineering in Unity Catalog" — but the concept and the API are unchanged. Same primitives, same
+    discipline, better governance.
+  </p>
+
+  <h2>Feature tables as a first-class concept</h2>
+
+  <p>
+    A feature table is a Delta table with three things:
+  </p>
+
+  <ol>
+    <li>An <strong>entity key</strong> — the identifier the feature applies to (user, product, transaction).</li>
+    <li>A <strong>timestamp column</strong> for time-aware features (point-in-time correctness).</li>
+    <li>One or more <strong>feature columns</strong> — the actual values.</li>
+  </ol>
+
+  <p>
+    What makes it a "feature table" rather than just a Delta table is the metadata Databricks
+    attaches: feature definitions, lineage, ACLs, registration with the feature engineering API.
+    Models that consume the table do so by reference; if the definition changes, downstream lineage
+    tracks it.
+  </p>
+
+  <BookFigure
+    src="/images/figures/ch47_fig1_two_worlds_feature_table.png"
+    alt="A single UC Feature Table feeding both training (offline batch reads) and serving (online mirror via Lakebase)"
+    caption="Two worlds, one feature table. Training reads the batch view; serving reads the online mirror in Lakebase. The values are the same — that's the entire point of a feature store."
+    source="Figure 47.1 · Volume 4, Chapter 47"
+  />
+
+  <h2>The training-serving skew problem, in detail</h2>
+
+  <p>
+    Imagine a recommendation model. At training time, "user's average purchase amount over the last
+    30 days" is computed by aggregating purchase records and joining to the user. At serving time,
+    that same feature is computed by a different system — a real-time stream, a feature pipeline, an
+    application backend.
+  </p>
+
+  <p>
+    Even subtle differences in those two computations — how nulls are handled, whether the 30-day
+    window includes the current day, which timezone the aggregation lives in — cause the model to
+    see different feature distributions in training versus production. The model degrades. The team
+    blames model drift. The actual cause is feature drift, which is almost always pipeline drift.
+  </p>
+
+  <p>
+    The feature store fixes this by being the single source for feature values, used by both
+    training and serving. The same query produces the same values.
+  </p>
+
+  <h2>Offline and online serving</h2>
+
+  <p>
+    Two access modes:
+  </p>
+
+  <ul>
+    <li><strong>Offline lookup</strong> — point-in-time joins for training. Given a set of entities and timestamps, return the feature values as they would have been at those timestamps.</li>
+    <li><strong>Online lookup</strong> — low-latency reads by entity key. Used at inference. Backed by Databricks Online Tables in 2026.</li>
+  </ul>
+
+  <p>
+    Online Tables are auto-synced from the offline feature table. A change in the offline table
+    propagates to the online table within seconds. The model serving endpoint reads from the online
+    table; sub-10ms latency at moderate scale.
+  </p>
+
+  <h2>Point-in-time correctness</h2>
+
+  <p>
+    The non-obvious requirement for offline lookups: features must be reconstructed as they were at
+    the training timestamp, not as they are today. A user's "last 30 days of purchases" looks
+    different now than it did a year ago.
+  </p>
+
+  <p>
+    The feature store handles this through the timestamp column and the offline join API. You pass
+    a training dataframe with entity keys and timestamps; the API returns features as of each
+    timestamp. Skipping this gives you a model that's overfit to information it wouldn't have at
+    inference time — leakage, in the worst case.
+  </p>
+
+  <h2>Lineage as a debugging tool</h2>
+
+  <p>
+    The feature engineering API records lineage automatically: which feature pipeline produced which
+    feature table; which models consumed which features; which inference workloads used which
+    models. Unity Catalog surfaces this graph.
+  </p>
+
+  <p>
+    The practical value: when a feature table needs to change, you can answer "what breaks" in
+    seconds. When a model misbehaves, you can answer "what features could be the cause" before
+    starting to investigate.
+  </p>
+
+  <h2>When the feature store is overkill</h2>
+
+  <p>
+    It's possible to over-invest. Two cases where a feature store adds more complexity than it
+    removes:
+  </p>
+
+  <ul>
+    <li><strong>One-off batch models</strong> — a model that runs once a week against a fixed snapshot. There's no training-serving boundary because there's no serving.</li>
+    <li><strong>Pure LLM applications with no structured features</strong> — if your "features" are just retrieved documents passed to an LLM, you're already using <a href="/topics/vector-search/">Vector Search</a>, not a feature store.</li>
+  </ul>
+
+  <p>
+    Most other production ML systems benefit from a feature store. The cost of not having one shows
+    up later.
+  </p>
+
+  <h2>What the book covers</h2>
+
+  <p>
+    The feature store chapter in <em>Databricks for Practitioners</em> walks through:
+  </p>
+
+  <ul>
+    <li>Designing feature tables with proper entity keys and timestamps.</li>
+    <li>Setting up online tables and validating freshness.</li>
+    <li>Point-in-time training data assembly.</li>
+    <li>Integrating with the <a href="/topics/mlflow/">MLflow Model Registry</a> for end-to-end lineage.</li>
+    <li>Patterns for sharing features across teams without coupling deployments.</li>
+    <li>The migration story from ad-hoc feature pipelines to a managed feature store.</li>
+  </ul>
+
+</TopicShell>

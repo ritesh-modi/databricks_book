@@ -1,0 +1,47 @@
+---
+import Layout from '../layouts/Layout.astro';
+import BuyCTA from '../components/BuyCTA.astro';
+---
+
+<Layout
+  title="Reviews and Endorsements"
+  description="Reviews and endorsements for the Databricks for Practitioners series (Volumes 3 and 4) from senior engineers, ML practitioners, and architects."
+>
+  <section class="max-w-3xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-16">
+    <p class="text-sm font-semibold text-[var(--color-accent)] uppercase tracking-wider">Reviews</p>
+    <h1 class="font-display text-4xl sm:text-5xl font-extrabold mt-3 tracking-tight">
+      What practitioners are saying.
+    </h1>
+    <p class="mt-6 text-[var(--color-ink-soft)] leading-relaxed">
+      <em>This page will be populated with real endorsements from technical reviewers across both
+      volumes as they arrive. Below are placeholder slots showing how each review will appear.</em>
+    </p>
+
+    <ul class="mt-12 space-y-6">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <li class="bg-white rounded-2xl border border-[var(--color-line)] p-6 sm:p-8">
+          <svg class="w-6 h-6 text-[var(--color-accent)] opacity-30" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+          <blockquote class="mt-3 text-[var(--color-ink-soft)] leading-relaxed text-lg italic">
+            "Replace this placeholder with a real reviewer quote — 2-3 sentences works best for
+            social proof on this page."
+          </blockquote>
+          <figcaption class="mt-5 pt-5 border-t border-[var(--color-line)]">
+            <p class="font-semibold">Reviewer Name {i}</p>
+            <p class="text-sm text-[var(--color-muted)] mt-0.5">Role · Company</p>
+          </figcaption>
+        </li>
+      ))}
+    </ul>
+
+    <div class="mt-12 p-6 rounded-2xl bg-[var(--color-accent-soft)] border border-[var(--color-accent)]/20">
+      <p class="font-bold text-[var(--color-ink)]">Want to review the book?</p>
+      <p class="mt-2 text-[var(--color-ink-soft)]">
+        Senior engineers and ML practitioners are welcome to request a review copy. Email
+        <a href="mailto:riteshmodi1310@gmail.com" class="text-[var(--color-accent)] font-medium underline">riteshmodi1310@gmail.com</a>
+        with a short note about your work.
+      </p>
+    </div>
+  </section>
+
+  <BuyCTA />
+</Layout>

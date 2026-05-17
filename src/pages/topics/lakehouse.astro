@@ -1,0 +1,163 @@
+---
+import TopicShell from '../../components/TopicShell.astro';
+
+const faqs = [
+  { q: 'What is the Databricks Lakehouse?', a: 'The Lakehouse is the architectural pattern Databricks pioneered: a single platform that combines the cheap, scalable storage of a data lake (cloud object storage + open formats like Delta Lake) with the performance, governance, and SQL-friendliness of a data warehouse. One copy of the data. One platform for analytics, ML, and AI.' },
+  { q: 'What is Delta Lake?', a: 'Delta Lake is the open-source storage layer underneath the Lakehouse. It adds ACID transactions, schema enforcement, time travel, and efficient updates/deletes to Parquet files in cloud storage. Without Delta, you have a data lake; with Delta, you have a Lakehouse.' },
+  { q: 'What is Unity Catalog?', a: 'Unity Catalog is the unified governance layer across all Databricks data, ML, and AI assets. Three-level naming (catalog.schema.object), fine-grained ACLs, lineage tracking, and audit. Every serious Databricks deployment in 2026 runs through Unity Catalog.' },
+  { q: 'What is medallion architecture?', a: 'Medallion is the three-layer pattern that organizes Lakehouse data: Bronze (raw ingestion, append-only), Silver (cleaned, conformed, deduplicated), Gold (business-level aggregates and feature tables). Data flows Bronze → Silver → Gold through scheduled pipelines.' },
+  { q: 'How does the Lakehouse compare to Snowflake or BigQuery?', a: "Snowflake and BigQuery are data warehouses with growing data-lake features. The Lakehouse is a data lake with growing warehouse features. The practical difference: Lakehouse data is in open formats you own, in your cloud account; warehouse data is in a proprietary internal format. For AI/ML-heavy workloads, the Lakehouse's openness usually wins." },
+  { q: 'Do I need to use Spark to use the Lakehouse?', a: "No. Delta Lake works from Spark, but also from Python directly via delta-rs, from Trino/Presto, from any engine that can read Delta. On Databricks specifically, you can use SQL warehouses, DBT, Python notebooks, or Spark — same underlying tables." },
+];
+
+const relatedTopics = [
+  { slug: 'feature-stores', label: 'Feature Stores' },
+  { slug: 'mlops-on-databricks', label: 'MLOps' },
+  { slug: 'vector-search', label: 'Vector Search' },
+];
+---
+
+<TopicShell
+  title="Lakehouse Architecture on Databricks: A Practitioner's Guide"
+  metaTitle="Databricks Lakehouse Architecture (2026): Delta Lake, Unity Catalog, Medallion"
+  description="Practitioner guide to Lakehouse architecture on Databricks in 2026 — Delta Lake, Unity Catalog, medallion design, and the substrate that makes everything else work."
+  keywords={[
+    'databricks lakehouse',
+    'lakehouse architecture',
+    'delta lake',
+    'unity catalog',
+    'medallion architecture',
+    'bronze silver gold',
+    'lakehouse 2026',
+    'databricks delta lake',
+    'lakehouse ai',
+    'lakehouse vs warehouse',
+    'unity catalog 2026',
+  ]}
+  intro="Everything on Databricks ultimately runs on the Lakehouse. Delta Lake (with Iceberg/UniForm interop) for storage. Unity Catalog for governance. Medallion architecture for organization. Get this layer right and the rest of the platform falls into place."
+  volume="v3"
+  faqs={faqs}
+  relatedTopics={relatedTopics}
+>
+
+  <p>
+    Before you build a RAG system, train a model, or deploy an agent, you need data — well-shaped,
+    governable, performant data. On Databricks, that's the Lakehouse: a Delta Lake storage layer
+    over cloud object storage, governed by Unity Catalog, organized by medallion architecture.
+  </p>
+
+  <p>
+    The interesting claim of the Lakehouse architecture isn't that you can do both analytics and ML
+    on it — that's been true of various platforms for years. The interesting claim is that you can
+    do them on the same data without copying it, without exporting it to a separate AI/ML platform,
+    without giving up the governance and consistency you'd have in a warehouse.
+  </p>
+
+  <h2>Delta Lake — what it actually does</h2>
+
+  <p>
+    Delta Lake adds four things to plain Parquet files:
+  </p>
+
+  <ol>
+    <li><strong>ACID transactions</strong> — concurrent writers don't corrupt the table.</li>
+    <li><strong>Schema enforcement and evolution</strong> — bad data is rejected; intentional schema changes are tracked.</li>
+    <li><strong>Time travel</strong> — query any historical version of the table.</li>
+    <li><strong>Efficient updates and deletes</strong> — Parquet alone is immutable; Delta makes updates and deletes practical.</li>
+  </ol>
+
+  <p>
+    The combination changes what you can do with a data lake. Streaming inserts and batch updates
+    against the same table. Re-running yesterday's report exactly as it ran yesterday. Deleting a
+    specific user's data without rewriting the universe. These aren't novelties — they're the
+    operational table-stakes that warehouses had and lakes didn't.
+  </p>
+
+  <h2>Unity Catalog — the governance layer that everything else depends on</h2>
+
+  <p>
+    Unity Catalog is the part of Databricks 2026 that most teams under-appreciate until they
+    suddenly need to answer "who has access to that table" or "which dashboards depend on this
+    column."
+  </p>
+
+  <p>
+    Three things Unity Catalog gives you:
+  </p>
+
+  <ul>
+    <li><strong>Three-level naming</strong> — <code>catalog.schema.object</code>. Catalogs are typically environments (dev, staging, prod) or business units. Schemas are projects or domains.</li>
+    <li><strong>Fine-grained ACLs</strong> — granted at any level. Row-level and column-level security for sensitive workloads.</li>
+    <li><strong>Lineage</strong> — automatic tracking of which queries produce which tables, which tables feed which models, which models serve which endpoints.</li>
+  </ul>
+
+  <p>
+    The lineage piece is the sleeper hit. When a column needs to change, "what breaks downstream" is
+    a UI query. When an incident happens, "what data did this model see" is a query. None of this
+    is novel governance theory; what's novel is that it's all in the platform without external
+    tooling.
+  </p>
+
+  <h2>Medallion architecture — three layers, one discipline</h2>
+
+  <p>
+    Medallion architecture is the convention for organizing Lakehouse data into layers:
+  </p>
+
+  <ul>
+    <li><strong>Bronze</strong> — raw ingested data, append-only, schema-loose. Everything that comes in lands here. The format mirrors the source.</li>
+    <li><strong>Silver</strong> — cleaned, conformed, deduplicated. Schema-enforced. The version of the data that downstream teams should consume by default.</li>
+    <li><strong>Gold</strong> — business-level aggregates, feature tables, dashboards. Often per-use-case rather than per-team.</li>
+  </ul>
+
+  <p>
+    The discipline matters more than the names. The reason teams adopt medallion is that without
+    layering, every consumer ends up reading raw data and applying ad-hoc cleanups — leading to the
+    same data being cleaned 17 different ways in 17 different notebooks. Medallion forces the
+    cleaning to happen once, in a known place.
+  </p>
+
+  <h2>Streaming and batch unified</h2>
+
+  <p>
+    A subtle but important point: Delta Lake makes streaming and batch convergent. The same table
+    can be appended to by a streaming job (Auto Loader, Structured Streaming) and read by a batch
+    job. Time travel makes reproducibility work even when data is constantly arriving.
+  </p>
+
+  <p>
+    For AI/ML, this matters because training data is increasingly streaming-fed. Your model wants
+    yesterday's data plus today's continuous arrivals. The Lakehouse handles both shapes natively.
+  </p>
+
+  <h2>The Lakehouse as the substrate for AI</h2>
+
+  <p>
+    Every AI feature on Databricks is built on top of the Lakehouse. <a href="/topics/vector-search/">Mosaic
+    AI Vector Search</a> indexes Delta tables. <a href="/topics/feature-stores/">Feature tables</a>
+    are Delta tables. <a href="/topics/mlflow/">MLflow</a> experiments persist to Delta-backed
+    storage. <a href="/topics/agentbricks/">AgentBricks</a> agents read Lakehouse data through
+    Unity-Catalog-governed tools.
+  </p>
+
+  <p>
+    This is the architectural claim: AI and analytics on the same data, governed by the same
+    catalog, in the same workspace. Not "AI workloads against an exported snapshot from the
+    warehouse" — actually on the same tables, with consistent semantics.
+  </p>
+
+  <h2>What the book covers</h2>
+
+  <p>
+    The Lakehouse chapter in <em>Databricks for Practitioners</em> covers:
+  </p>
+
+  <ul>
+    <li>Delta Lake operations at the level a senior engineer needs: optimization, partitioning, Z-ordering, vacuum.</li>
+    <li>Unity Catalog setup from zero: catalogs, schemas, ACLs, external locations.</li>
+    <li>Medallion in practice — what goes in each layer, where teams cut corners, and the antipatterns that emerge.</li>
+    <li>Streaming + batch unification with Auto Loader and Structured Streaming.</li>
+    <li>The governance patterns that hold up under audit.</li>
+  </ul>
+
+</TopicShell>

@@ -1,0 +1,175 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import StickyBuyBar from '../components/StickyBuyBar.astro';
+import { series, volumes, type Volume } from '../data/book';
+
+export interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  canonical?: string;
+  type?: 'website' | 'article' | 'book';
+  publishedTime?: string;
+  modifiedTime?: string;
+  keywords?: string[];
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Which volume drives the default Book JSON-LD. Omit on homepage/series-wide pages. */
+  primaryVolume?: 'v3' | 'v4';
+}
+
+const {
+  title,
+  description,
+  ogImage = '/og-default.svg',
+  canonical,
+  type = 'website',
+  publishedTime,
+  modifiedTime,
+  keywords = [],
+  noindex = false,
+  jsonLd,
+  primaryVolume,
+} = Astro.props;
+
+const fullTitle = title.includes(series.title) ? title : `${title} | ${series.title}`;
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
+const ogImageUrl = new URL(ogImage, Astro.site).href;
+
+const bookSchemaFor = (v: Volume) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Book',
+  name: v.fullTitle,
+  alternateName: v.subtitle,
+  bookEdition: `Volume ${v.volume}`,
+  author: {
+    '@type': 'Person',
+    name: series.author.name,
+    url: series.author.url,
+    jobTitle: series.author.title,
+  },
+  isbn: v.isbn.startsWith('PLACEHOLDER') ? undefined : v.isbn,
+  publisher: v.publisher,
+  datePublished: `${v.publishedYear}`,
+  inLanguage: v.language,
+  description: v.description,
+  numberOfPages: v.pages || undefined,
+  url: new URL('/', Astro.site).href,
+  image: new URL(v.coverImage, Astro.site).href,
+  bookFormat: 'https://schema.org/EBook',
+  about: v.keyTopics,
+  isPartOf: {
+    '@type': 'BookSeries',
+    name: series.seriesName,
+  },
+});
+
+const defaultBookSchemas = primaryVolume
+  ? [bookSchemaFor(volumes[primaryVolume])]
+  : [bookSchemaFor(volumes.v3), bookSchemaFor(volumes.v4)];
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: series.author.name,
+  jobTitle: series.author.title,
+  url: series.author.url,
+  sameAs: [
+    'https://www.linkedin.com/in/riteshmodi/',
+    'https://github.com/ritmodi',
+    'https://medium.com/@scorchsp1',
+    'https://hackernoon.com/u/ritmodi',
+  ],
+  knowsAbout: [
+    'Databricks',
+    'Apache Spark',
+    'Unity Catalog',
+    'Lakeflow',
+    'Delta Lake',
+    'MLflow',
+    'Mosaic AI',
+    'Generative AI',
+    'Retrieval Augmented Generation',
+    'Vector Search',
+    'Agent Bricks',
+    'Multi-Agent Systems',
+    'MLOps',
+    'LLMOps',
+    'Feature Stores',
+    'Lakehouse Architecture',
+    'Lakebase',
+    'Azure',
+    'Microsoft Azure',
+  ],
+};
+
+const allJsonLd: Array<Record<string, unknown>> = [...defaultBookSchemas, personSchema];
+if (jsonLd) {
+  if (Array.isArray(jsonLd)) allJsonLd.push(...jsonLd);
+  else allJsonLd.push(jsonLd);
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+    <meta name="color-scheme" content="light" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
+    <meta name="author" content={series.author.name} />
+
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {!noindex && <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />}
+
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content={series.title} />
+    <meta property="og:locale" content="en_US" />
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    {type === 'article' && <meta property="article:author" content={series.author.name} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:creator" content="@scorchsp1" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="alternate" type="application/rss+xml" title={series.title} href="/rss.xml" />
+
+    {allJsonLd.map((schema) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <Nav />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+    <StickyBuyBar />
+  </body>
+</html>

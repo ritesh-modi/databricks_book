@@ -1,0 +1,69 @@
+---
+import Layout from '../layouts/Layout.astro';
+import BuyCTA from '../components/BuyCTA.astro';
+---
+
+<Layout
+  title="About the Author — Ritesh Modi"
+  description="Ritesh Modi — Principal Engineer at Microsoft, author of 18 technology books, speaker at Microsoft BUILD and .NET Conf, and creator of Microsoft's open-source RAG and LLMOps templates."
+  keywords={['ritesh modi', 'ritesh modi author', 'ritesh modi databricks', 'principal engineer microsoft ai']}
+>
+  <section class="max-w-3xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-12">
+    <p class="text-sm font-semibold text-[var(--color-accent)] uppercase tracking-wider">About the author</p>
+    <h1 class="font-display text-4xl sm:text-5xl font-extrabold mt-3 tracking-tight">
+      Ritesh Modi
+    </h1>
+    <p class="mt-3 text-lg text-[var(--color-ink-soft)]">
+      Head of AI at MarketOnce · ex-Microsoft Principal Forward Deployed Engineer · 18× Author
+    </p>
+
+    <div class="prose-custom mt-10">
+      <p>
+        I'm currently Head of AI at MarketOnce, and previously a Principal Forward Deployed Engineer
+        at Microsoft. Most of my time is spent between the system-design tradeoffs of production AI
+        platforms and the practical questions engineers actually run into when they try to ship one.
+      </p>
+
+      <h2>Why these books</h2>
+      <p>
+        Databricks has quietly become the dominant operating system for production data and AI work.
+        The documentation is solid. The marketing is busy. What's missing is the practitioner's
+        viewpoint — the architecture-level decisions, the operational realities, the tradeoffs that
+        only become obvious when you're on call for a system that suddenly costs 3× what it did last
+        week.
+      </p>
+      <p>
+        These two volumes are the synthesis of what works. Volume 3 (<em>The Production Lakehouse
+        Playbook</em>) is the platform foundation — Unity Catalog, Lakeflow, governance, orchestration,
+        CI/CD. Volume 4 (<em>The AI Lakehouse Playbook</em>) is the AI build-out — Mosaic AI, Agent
+        Bricks, MLflow 3, the Multi-Agent Supervisor, Lakebase. Written for engineers, ML
+        practitioners, and architects who are done with surface-level tutorials.
+      </p>
+
+      <h2>Track record</h2>
+      <ul>
+        <li><strong>18 published technology books</strong> across cloud, blockchain, ML, and GenAI — including the <em>Azure for Architects</em> series, <em>Solidity Programming Essentials</em>, <em>Deep Dive Terraform on Azure</em>, and the <em>Inside Language Models</em> series.</li>
+        <li><strong>Books adopted by 20+ universities</strong> through AICTE for blockchain coursework.</li>
+        <li><strong>100,000+ enterprise users</strong> received <em>Azure for Architects</em> through Microsoft's free distribution.</li>
+        <li><strong>Speaker at Microsoft BUILD 2024</strong> (200,000+ registrants), <strong>.NET Conference 2025</strong> (900+ attendees), <strong>Global Azure 2025</strong>, and the UK Securitisation Summit.</li>
+        <li><strong>Creator of Microsoft's open-source <a href="https://github.com/microsoft/rag-experiment-accelerator" target="_blank" rel="noopener">RAG Experiment Accelerator</a></strong> and <strong><a href="https://github.com/microsoft/genaiops-promptflow-template" target="_blank" rel="noopener">LLMOps PromptFlow Template</a></strong>.</li>
+        <li><strong>Contributor to HashiCorp's Terraform AzureRM Provider</strong> — used at 115M+ downloads per year.</li>
+        <li><strong>Microsoft Regional Director</strong> (honorary, 2018–2020).</li>
+        <li><strong>DeepTech mentor</strong> at T-Hub through the Kickstart-Blitz program.</li>
+      </ul>
+
+      <h2>Where to find me</h2>
+      <p>
+        Best places:
+        <a href="https://www.riteshmodi.com" target="_blank" rel="noopener">riteshmodi.com</a>,
+        <a href="https://www.linkedin.com/in/riteshmodi/" target="_blank" rel="noopener">LinkedIn</a>,
+        <a href="https://github.com/ritmodi" target="_blank" rel="noopener">GitHub</a>,
+        <a href="https://hackernoon.com/u/ritmodi" target="_blank" rel="noopener">HackerNoon</a>.
+        For book inquiries and speaking, email
+        <a href="mailto:riteshmodi1310@gmail.com">riteshmodi1310@gmail.com</a>.
+      </p>
+    </div>
+  </section>
+
+  <BuyCTA />
+</Layout>

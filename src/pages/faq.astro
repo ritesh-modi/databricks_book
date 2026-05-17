@@ -1,0 +1,66 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FAQSection from '../components/FAQSection.astro';
+import BuyCTA from '../components/BuyCTA.astro';
+import { homepageFaqs } from '../data/faqs';
+import { volumes } from '../data/book';
+
+const extendedFaqs = [
+  ...homepageFaqs,
+  {
+    q: 'How long are the books?',
+    a: `Volume 3 is ${volumes.v3.chapters} chapters / ~${volumes.v3.pages} pages. Volume 4 is ${volumes.v4.chapters} chapters / ~${volumes.v4.pages} pages. Each chapter is a deep technical guide — typically 25 to 40 pages of dense practitioner content with worked examples on the running retail-analytics dataset that threads through the series.`,
+  },
+  {
+    q: 'Are there code samples?',
+    a: 'Yes. PySpark is the primary interface; SQL is used where idiomatic on Databricks (SDP, Genie, AI SQL functions, Unity Catalog DDL). All code targets the 2026 Databricks platform with Asset Bundle-friendly project layouts. Companion code is available in a public GitHub repository.',
+  },
+  {
+    q: 'Do the two volumes share a running example?',
+    a: "Yes — both volumes use the same retail-analytics dataset that threaded through Volumes 1 and 2 (open-source Apache Spark). Volume 3 moves it into Databricks: Auto Loader + Lakeflow Connect ingestion, an SDP pipeline for bronze/silver/gold, UC governance, Lakeflow Jobs orchestration, DAB-based promotion. Volume 4 powers AI/BI Dashboards, a Genie space, a Feature-Store-backed recommendation model served via Model Serving, an Agent Bricks classifier, a Lakebase table for user-facing state, and a Databricks App that stitches it together.",
+  },
+  {
+    q: 'Can I get a corporate license for my team?',
+    a: 'Amazon offers volume pricing for Kindle Direct purchases. For larger team adoptions (50+ engineers), email riteshmodi1310@gmail.com — bulk discounts and optional virtual Q&A sessions with the author are available.',
+  },
+  {
+    q: 'Is the series covered by any university or training program?',
+    a: 'The author has long-standing relationships with AICTE-affiliated universities; the series is being submitted for inclusion in their AI/ML and data-engineering curricula for 2026–27. For specific institutional adoption inquiries, email riteshmodi1310@gmail.com.',
+  },
+  {
+    q: "How does this compare to the author's Azure books?",
+    a: "The Azure for Architects series focused on cloud architecture broadly. The Databricks for Practitioners series focuses specifically on Databricks — Volume 3 on the platform foundation, Volume 4 on the AI build-out. There is some overlap in MLOps fundamentals; the rest is new ground.",
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: extendedFaqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<Layout
+  title="FAQ — Databricks for Practitioners"
+  description="Answers to common questions about Databricks for Practitioners — the two-volume series. Which volume to start with, what's covered, formats, pricing, updates, and how the books compare to the official Databricks documentation."
+  keywords={['databricks for practitioners faq', 'databricks book questions', 'databricks book pricing', 'databricks series']}
+  jsonLd={faqSchema}
+>
+  <section class="max-w-3xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-4">
+    <p class="text-sm font-semibold text-[var(--color-accent)] uppercase tracking-wider">FAQ</p>
+    <h1 class="font-display text-4xl sm:text-5xl font-extrabold mt-3 tracking-tight">
+      Questions, answered.
+    </h1>
+    <p class="mt-4 text-lg text-[var(--color-ink-soft)] leading-relaxed">
+      Everything most readers ask before buying. If your question isn't here, email
+      <a href="mailto:riteshmodi1310@gmail.com" class="text-[var(--color-accent)] underline">riteshmodi1310@gmail.com</a>.
+    </p>
+  </section>
+
+  <FAQSection faqs={extendedFaqs} title="" />
+  <BuyCTA />
+</Layout>

@@ -1,0 +1,159 @@
+---
+import TopicShell from '../../components/TopicShell.astro';
+import BookFigure from '../../components/BookFigure.astro';
+
+const faqs = [
+  { q: 'What are Databricks Asset Bundles (DAB)?', a: 'A declarative deployment format for Databricks workloads. A bundle is a YAML-described collection of jobs, SDP pipelines, MLflow experiments, model serving endpoints, and the artifacts they depend on. You version it in Git, validate it with the Databricks CLI, and deploy it identically to dev, staging, and prod. In 2026 the family was renamed Declarative Automation Bundles but the muscle memory is still DAB.' },
+  { q: 'Why not just use the UI or Terraform?', a: "The UI is fine for prototyping but offers no review, no diff, no rollback. Terraform works but treats Databricks as just another cloud resource provider — slow, awkward for notebook-heavy projects, no awareness of Databricks-specific concepts like UC dependencies or job retries. DAB is purpose-built: faster to write, faster to deploy, aware of the platform, and it's how Databricks itself ships its first-party templates." },
+  { q: 'How does DAB compare to the Databricks Terraform provider?', a: "DAB owns the deployable workload definition (jobs, pipelines, ML artifacts). Terraform owns the platform infrastructure that doesn't change run-to-run (workspaces, UC catalogs, account-level resources, network configuration). Many mature estates use both: Terraform for the platform substrate, DAB for everything the application teams ship on top." },
+  { q: 'Can I template bundles for multiple environments?', a: 'Yes. Bundles support variables, environments, and overrides — you write the bundle once and parameterize the catalog name, cluster size, schedule, and SP per environment. The `databricks bundle deploy -t prod` command applies the prod overrides. It\'s the cleanest pattern for environment promotion on Databricks.' },
+  { q: 'Where do bundles live in a repo?', a: 'Typically the repository root has `databricks.yml` (the bundle manifest), `resources/` (job, pipeline, model definitions), and `src/` (the actual Python/SQL code). Notebooks can live as `.py` files with cell markers — Git-friendly while remaining runnable as notebooks. The pattern is mature enough that the official Databricks CLI scaffolds it for you.' },
+  { q: 'Do bundles work for ML workloads?', a: 'Yes. MLflow experiments, registered models in UC, and serving endpoints can all be bundle resources. The pattern that works: bundle defines the training job and the serving endpoint that consumes the registered model alias. Promote a model by moving the `@prod` alias — the endpoint follows automatically. This is the same pattern we cover in <a href="/topics/mlops-on-databricks/">MLOps</a>.' },
+];
+
+const relatedTopics = [
+  { slug: 'lakeflow-jobs', label: 'Lakeflow Jobs' },
+  { slug: 'databricks-cicd', label: 'CI/CD on Databricks' },
+  { slug: 'mlops-on-databricks', label: 'MLOps' },
+  { slug: 'unity-catalog', label: 'Unity Catalog' },
+];
+---
+
+<TopicShell
+  title="Databricks Asset Bundles (DAB): Declarative Deployment for Production Workloads"
+  metaTitle="Databricks Asset Bundles (2026): The Production Deployment Playbook"
+  description="A practitioner guide to Databricks Asset Bundles — the declarative format for shipping jobs, SDP pipelines, ML artifacts, and serving endpoints. Multi-environment templating, CI/CD integration, and how DAB compares to Terraform."
+  keywords={[
+    'databricks asset bundles',
+    'databricks dab',
+    'declarative automation bundles',
+    'databricks deployment',
+    'databricks cli',
+    'databricks bundle deploy',
+    'databricks ci/cd',
+    'databricks terraform vs dab',
+    'databricks environment promotion',
+    'databricks bundle yaml',
+    'databricks bundles 2026',
+  ]}
+  volume="v3"
+  intro="Asset Bundles are how production workloads ship on Databricks in 2026. A YAML manifest, the Databricks CLI, environment-aware overrides, and an audit trail in Git. They replace the era of UI-clicked jobs and brittle Terraform modules. This guide is the practitioner-level overview: when to use bundles, how they sit alongside Terraform, the structure that scales, and the CI/CD shape they enable."
+  faqs={faqs}
+  relatedTopics={relatedTopics}
+>
+  <p>
+    Every Databricks team eventually hits the wall: a job was created in the UI, edited by three
+    people, never reviewed, and now nobody can answer "what changed last Tuesday?" The wall has had
+    several proposed solutions — Terraform, the REST API, hand-rolled scripts — and one that has
+    consistently held up: Databricks Asset Bundles. They are the platform's purpose-built deployment
+    format, and in 2026 they are how serious teams ship.
+  </p>
+
+  <BookFigure
+    src="/images/figures/ch34_fig1_bundle_anatomy.png"
+    alt="Anatomy of a databricks.yml bundle showing the four top-level sections and how targets override fields"
+    caption="Anatomy of a databricks.yml bundle. Four top-level sections; targets override root-level fields per environment; resources describe what the bundle deploys."
+    source="Figure 34.1 · Volume 3, Chapter 34"
+  />
+
+  <h2>What a bundle actually is</h2>
+  <p>
+    A directory with a <code>databricks.yml</code> manifest and any code or notebooks it deploys. The
+    manifest declares <strong>resources</strong> (jobs, pipelines, models, endpoints, dashboards) and
+    <strong>targets</strong> (environments — dev, staging, prod). Variables and overrides parameterize
+    per-environment values. The <code>databricks bundle</code> CLI validates, plans, and deploys the
+    bundle against a target.
+  </p>
+  <pre><code>{`bundle:
+  name: retail-platform
+
+variables:
+  catalog:
+    default: dev_retail
+
+resources:
+  jobs:
+    bronze_ingest:
+      name: \${var.catalog}__bronze-ingest
+      tasks:
+        - task_key: ingest
+          notebook_task:
+            notebook_path: ./src/bronze_ingest.py
+
+targets:
+  prod:
+    variables:
+      catalog: prod_retail
+    run_as:
+      service_principal_name: sp-retail-prod`}</code></pre>
+  <p>
+    That snippet is the entire shape: one bundle, one job, three environments, one service principal
+    per environment. You expand from there — more jobs, SDP pipelines, MLflow models — and the model
+    holds.
+  </p>
+
+  <h2>DAB vs Terraform: when to reach for which</h2>
+  <p>
+    The honest answer: both, for different layers. Terraform is right for platform infrastructure that
+    rarely changes — workspaces themselves, account-level UC catalogs, network configuration, IAM
+    federation. DAB is right for the workloads that change with every sprint — jobs, pipelines, models,
+    endpoints. Most production estates use both: a small Terraform repo per platform, a DAB-based repo
+    per team.
+  </p>
+  <p>
+    DAB exists because Terraform's resource model doesn't naturally fit notebook-and-job-shaped work.
+    Updating a notebook shouldn't require a `terraform apply`. Promoting a job from staging to prod
+    shouldn't require state imports. Bundles handle this naturally.
+  </p>
+
+  <h2>Multi-environment promotion: the pattern that actually works</h2>
+  <p>
+    The bundle is the single source of truth; targets are the variation points. A typical promotion
+    flow:
+  </p>
+  <ol>
+    <li>Engineer pushes a branch with bundle changes.</li>
+    <li>CI runs <code>databricks bundle validate</code> on the PR.</li>
+    <li>Merge to main triggers <code>databricks bundle deploy -t dev</code>.</li>
+    <li>Manual approval gates <code>deploy -t staging</code>.</li>
+    <li>Tests pass → deploy -t prod, run as the prod SP.</li>
+  </ol>
+  <p>
+    Same bundle, same artifacts, different target. The only thing that varies between staging and prod
+    is the variables and the SP — which is exactly what you want.
+  </p>
+
+  <h2>What goes in the bundle, what stays out</h2>
+  <p>
+    Bundle: jobs, SDP pipelines, model serving endpoints, MLflow experiments, registered model aliases,
+    notebooks (as <code>.py</code> with cell markers), Python wheels, dashboards.
+  </p>
+  <p>
+    Not bundle: UC catalogs/schemas/grants (those belong in Terraform or the platform team's setup),
+    secrets (those live in secret scopes, referenced by name), business data (obviously).
+  </p>
+
+  <h2>The CLI and the iteration loop</h2>
+  <p>
+    The local development loop is fast:
+  </p>
+  <ul>
+    <li><code>databricks bundle validate</code> — syntax + schema + reference check.</li>
+    <li><code>databricks bundle deploy -t dev</code> — push to the dev target.</li>
+    <li><code>databricks bundle run job_name -t dev</code> — trigger a single job.</li>
+    <li><code>databricks bundle destroy -t dev</code> — clean teardown of everything the bundle created.</li>
+  </ul>
+  <p>
+    The teardown command is underrated. Being able to spin up an entire deployment, run an experiment,
+    and tear it down cleanly is the difference between a confident change and a lingering test.
+  </p>
+
+  <h2>What's in Volume 3 on this</h2>
+  <p>
+    Chapter 34 is the full DAB chapter: bundle anatomy, the CLI and SDK, variable and override patterns,
+    multi-target promotion, and a worked example that takes the retail-analytics pipeline from a
+    developer notebook to a versioned, SP-executed prod workload. Chapter 35 follows up with the
+    <a href="/topics/databricks-cicd/">CI/CD wrapper</a> in GitHub Actions, using OIDC federation so no
+    long-lived secrets ever land in the CI environment.
+  </p>
+</TopicShell>

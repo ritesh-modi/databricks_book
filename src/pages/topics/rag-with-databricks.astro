@@ -1,0 +1,214 @@
+---
+import TopicShell from '../../components/TopicShell.astro';
+import BookFigure from '../../components/BookFigure.astro';
+
+const faqs = [
+  { q: 'What is RAG on Databricks?', a: 'RAG (retrieval-augmented generation) on Databricks combines Mosaic AI Vector Search for retrieval, foundation models hosted on Databricks Model Serving, and the broader Lakehouse for data prep and evaluation. The platform handles indexing, embedding, retrieval, generation, and observability through a single integrated stack.' },
+  { q: 'Why use Mosaic AI Vector Search instead of an external vector DB?', a: 'It runs against the same Delta tables that produce your data, inherits Unity Catalog governance, integrates natively with Databricks Model Serving, and removes a class of synchronization bugs between your source-of-truth tables and your search index. For Databricks-resident data, an external vector DB usually adds more complexity than value.' },
+  { q: 'How do I evaluate a Databricks RAG pipeline?', a: 'Use MLflow Evaluate with RAG-specific metrics — answer relevance, faithfulness, context precision, context recall. Databricks ships built-in evaluation judges, but for high-stakes domains build a curated eval set and run regression tests against every prompt or retrieval change.' },
+  { q: 'What is the best chunking strategy for RAG on Databricks?', a: "There isn't one. Start with 500-1000 token chunks with 10-20% overlap, then iterate based on retrieval evaluation. Document-structure-aware chunking (markdown headers, code blocks, sections) usually beats fixed-size splitting. The book covers four strategies in detail and when each wins." },
+  { q: 'Can I use OpenAI or Claude models with Databricks Vector Search?', a: "Yes. Databricks Model Serving supports both Databricks-hosted foundation models (DBRX, Llama, Mosaic) and external endpoints (OpenAI, Anthropic, Cohere) through a single API. The retrieval and orchestration layer is decoupled from the generation model choice." },
+  { q: 'How much does a production RAG system on Databricks cost?', a: 'It varies wildly with traffic and index size. The dominant costs are usually (1) embedding model calls during ingestion, (2) vector index serving DBUs, (3) generation model inference, and (4) Lakehouse storage. The book has a cost model and benchmarks for typical workloads.' },
+];
+
+const relatedTopics = [
+  { slug: 'vector-search', label: 'Mosaic AI Vector Search' },
+  { slug: 'mlflow', label: 'MLflow Evaluation' },
+  { slug: 'agentbricks', label: 'AgentBricks' },
+  { slug: 'mlops-on-databricks', label: 'MLOps' },
+];
+---
+
+<TopicShell
+  title="RAG on Databricks: The 2026 Practitioner's Guide"
+  metaTitle="RAG on Databricks (2026): Vector Search, Mosaic AI, Production Patterns"
+  description="A complete practitioner guide to building retrieval-augmented generation (RAG) systems on Databricks in 2026 — Mosaic AI Vector Search, chunking, retrieval evaluation, generation, MLflow tracing, and the operational patterns that survive scale."
+  keywords={[
+    'rag on databricks',
+    'databricks rag',
+    'mosaic ai vector search',
+    'databricks vector search',
+    'databricks retrieval augmented generation',
+    'rag pipeline databricks',
+    'databricks llm',
+    'mosaic ai',
+    'unity catalog vector search',
+    'databricks foundation model api',
+    'databricks rag 2026',
+    'retrieval evaluation databricks',
+  ]}
+  intro="Retrieval-augmented generation is the dominant pattern for production LLM systems in 2026. On Databricks, it converges around Mosaic AI Vector Search, Foundation Model APIs, and MLflow's evaluation tooling. This guide is the architecture, the operational mechanics, and the parts where teams keep getting it wrong."
+  volume="v4"
+  faqs={faqs}
+  relatedTopics={relatedTopics}
+>
+
+  <p>
+    Most teams shipping a Databricks RAG system in 2026 follow roughly the same architecture. Documents
+    land in Delta tables. A pipeline chunks and embeds them. The chunks plus their embeddings land in
+    a <a href="/topics/vector-search/">Mosaic AI Vector Search</a> index. At query time, the user's
+    question is embedded, the top-k chunks are retrieved, and a generation model — local or external
+    — produces the answer. Tracing, evaluation, and monitoring run through MLflow.
+  </p>
+
+  <p>
+    The picture above is correct. It is also dangerously oversimplified. The interesting question is
+    not "what does a RAG system look like" — it's "what breaks at scale, and what does it cost?"
+  </p>
+
+  <BookFigure
+    src="/images/figures/ch45_fig1_rag_pipeline.png"
+    alt="Five-stage RAG pipeline: question → embed → retrieve → assemble prompt → generate grounded answer"
+    caption="The RAG pipeline, end to end. Five stages — short each, together they turn a model into a grounded assistant. The Vector Search index is auto-synced from a UC Delta table."
+    source="Figure 45.1 · Volume 4, Chapter 45"
+  />
+
+  <h2>The architecture, in production-realistic terms</h2>
+
+  <p>
+    A working RAG system on Databricks has five components, each with its own failure modes:
+  </p>
+
+  <ol>
+    <li><strong>Ingestion and chunking</strong> — converting raw documents into retrieval-friendly units.</li>
+    <li><strong>Embedding generation</strong> — turning text chunks into vectors using a foundation model.</li>
+    <li><strong>Vector index</strong> — a queryable index over those vectors, kept in sync with the source data.</li>
+    <li><strong>Retrieval and re-ranking</strong> — finding relevant chunks for a given query.</li>
+    <li><strong>Generation</strong> — assembling a prompt and producing the final answer with an LLM.</li>
+  </ol>
+
+  <p>
+    Skip any of these and you have a demo, not a system. The book treats each as its own engineering
+    discipline.
+  </p>
+
+  <h2>Chunking is where most teams underestimate the work</h2>
+
+  <p>
+    The fundamental tension in chunking: small chunks retrieve more precisely but lose context;
+    large chunks preserve context but dilute relevance signal. Fixed-size chunking — the default in
+    every tutorial — is rarely the right answer for production.
+  </p>
+
+  <p>
+    In practice, the chunking strategies that work in 2026 fall into four categories:
+  </p>
+
+  <ul>
+    <li><strong>Structure-aware</strong> — chunks follow document semantics: markdown headers, HTML sections, code blocks. Keeps related content together.</li>
+    <li><strong>Recursive</strong> — splits on hierarchical separators (paragraphs first, then sentences, then characters), preserving as much structure as the chunk size allows.</li>
+    <li><strong>Semantic</strong> — uses an embedding model to detect topical boundaries. More expensive at ingestion, often pays back in retrieval quality.</li>
+    <li><strong>Late chunking</strong> — embeds the full document, then chunks the embedding output. Preserves long-range context but requires support from the embedding model.</li>
+  </ul>
+
+  <p>
+    Pick a default, instrument retrieval evaluation, and iterate. Don't pick based on what reads well
+    in a blog post.
+  </p>
+
+  <h2>Mosaic AI Vector Search is the right default — usually</h2>
+
+  <p>
+    For Databricks-resident data, Mosaic AI Vector Search is almost always the right vector store.
+    It indexes directly from Delta tables, syncs automatically when source data changes, inherits
+    Unity Catalog access controls, and runs in the same workspace as your generation models. The
+    alternative — externalizing to Pinecone, Weaviate, or pgvector — adds an entire integration
+    surface and a class of "the index is out of date" bugs.
+  </p>
+
+  <p>
+    Where external vector stores still win: extremely high QPS workloads where Databricks DBU cost
+    becomes prohibitive, or hybrid stacks where the same vector index serves multiple non-Databricks
+    consumers. The <a href="/topics/vector-search/">Vector Search topic guide</a> covers the decision
+    framework in detail.
+  </p>
+
+  <h2>Generation model selection matters less than you think</h2>
+
+  <p>
+    Once retrieval works, the choice of generation model becomes mostly a cost-vs-quality tradeoff.
+    Databricks Foundation Model APIs give you access to DBRX, Llama, Mosaic models, and external
+    providers (OpenAI, Anthropic, Cohere) through a single endpoint. You can A/B test models without
+    rewriting the application.
+  </p>
+
+  <p>
+    The teams that win on quality spend their time on retrieval, not on model swaps. Better
+    retrieval and a mid-tier generator usually beats worse retrieval and a frontier model.
+  </p>
+
+  <h2>Evaluation is what separates a working RAG from a shipped RAG</h2>
+
+  <p>
+    The single biggest gap between RAG demos and RAG products is the absence of evaluation. If you
+    can't measure whether a prompt change makes things better or worse, you're guessing.
+  </p>
+
+  <p>
+    MLflow's evaluation tooling on Databricks ships with RAG-specific judges out of the box:
+  </p>
+
+  <ul>
+    <li><strong>Answer relevance</strong> — does the answer address the question?</li>
+    <li><strong>Faithfulness / groundedness</strong> — does the answer stay within the retrieved context?</li>
+    <li><strong>Context precision</strong> — how much of the retrieved context is relevant?</li>
+    <li><strong>Context recall</strong> — how much of the required information was retrieved?</li>
+    <li><strong>Safety</strong> — does the output avoid policy violations?</li>
+  </ul>
+
+  <p>
+    Build a curated evaluation set early — 50-200 representative question/expected-answer pairs is
+    enough to start. Run it on every meaningful pipeline change. Track results in the MLflow
+    experiment UI. The discipline of regression-testing a RAG system is the same discipline you'd
+    apply to any other production code.
+  </p>
+
+  <h2>Tracing and observability — MLflow handles both</h2>
+
+  <p>
+    MLflow 3.0 added native LLM tracing — every retrieval, every model call, every tool invocation
+    becomes a span. On Databricks, this gives you a single pane of glass for debugging "why did the
+    answer say that?" Without tracing, RAG debugging is a nightmare; with it, root-causing a bad
+    answer takes minutes instead of hours.
+  </p>
+
+  <p>
+    The <a href="/topics/mlflow/">MLflow topic guide</a> goes deeper into the tracing model.
+  </p>
+
+  <h2>When RAG becomes an agent — and you should care</h2>
+
+  <p>
+    The line between "RAG system" and "agent" blurs quickly. The moment your system needs to
+    decide what to retrieve, retrieve in multiple steps, call non-retrieval tools, or reflect on
+    its own output, you have an agent. In 2026, the natural home for that on Databricks is
+    <a href="/topics/agentbricks/">AgentBricks</a>.
+  </p>
+
+  <p>
+    The fast rule of thumb: if a single retrieval-and-generate pass solves the problem, stay with
+    pure RAG. If you find yourself building retry logic, multi-step retrieval, or tool routing,
+    promote it to an agent and use the right framework.
+  </p>
+
+  <h2>What the book covers, in detail</h2>
+
+  <p>
+    <em>Databricks for Practitioners</em> dedicates a full chapter to RAG. It includes:
+  </p>
+
+  <ul>
+    <li>A reference Lakehouse-native ingestion pipeline with idempotent re-indexing.</li>
+    <li>Four chunking strategies with evaluation results on three benchmark corpora.</li>
+    <li>End-to-end retrieval evaluation harness using MLflow Evaluate.</li>
+    <li>Cost analysis for embedding generation, index serving, and inference at three traffic levels.</li>
+    <li>Production patterns: incremental indexing, document deletion, multi-tenant indexes, A/B testing retrieval strategies.</li>
+    <li>The five most common failure modes and how to detect them in production.</li>
+  </ul>
+
+  <p>
+    The chapter assumes you can read Python and have an active Databricks workspace. It does not
+    re-explain what a vector is.
+  </p>
+
+</TopicShell>
