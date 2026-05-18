@@ -26,7 +26,7 @@ export const series = {
    * (the bare token, not the full <meta> tag) when ready.
    */
   verification: {
-    google: '', // Google Search Console → Settings → Ownership → HTML tag → content="..."
+    google: 'googlef0ab1e9b943275f3.html', // Google Search Console → Settings → Ownership → HTML tag → content="..."
     bing: '', // Bing Webmaster Tools → Add Site → Add a meta tag → content="..."
     yandex: '', // optional
   },
