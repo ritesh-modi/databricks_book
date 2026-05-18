@@ -5,8 +5,8 @@ const faqs = [
   { q: 'What is Mosaic AI Vector Search?', a: "Mosaic AI Vector Search is Databricks' native vector database. It indexes data directly from Delta tables, auto-syncs when source data changes, inherits Unity Catalog governance, and integrates with Databricks Foundation Model APIs for embeddings and generation." },
   { q: 'Does it support hybrid search?', a: "Yes. Hybrid search combines dense vector retrieval with keyword (BM25) retrieval, then re-ranks. For domains with technical terminology, identifiers, or exact-match needs, hybrid usually beats pure vector search. The 2026 release makes hybrid the default for most index types." },
   { q: 'How do I choose an embedding model?', a: "Three factors: dimensionality (smaller = cheaper at scale), recall on your domain (test it; don't trust benchmarks), and latency tolerance. For general text in 2026, BGE M3 and Mosaic's MXBai-large are strong defaults. For code, specialized models still win. The book has benchmark results on three domains." },
-  { q: 'What is the cost model?', a: 'Two main components: (1) embedding generation at ingestion time, billed per token; (2) index serving DBUs, billed by index size and traffic. Storage is incidental. A 10M-document index serving moderate traffic typically costs hundreds, not thousands, of dollars per month — but it scales non-linearly above that.' },
-  { q: 'Can I update or delete individual documents?', a: 'Yes. Delta sync mode keeps the index in lockstep with the source Delta table — inserts, updates, and deletes propagate automatically. Direct vector index mode requires you to manage upserts yourself but gives finer control.' },
+  { q: 'What is the cost model?', a: 'Two main components: (1) embedding generation at ingestion time, billed per token; (2) index serving DBUs, billed by index size and traffic. Storage is incidental. A 10M-document index serving moderate traffic typically costs hundreds, not thousands, of dollars per month, but it scales non-linearly above that.' },
+  { q: 'Can I update or delete individual documents?', a: 'Yes. Delta sync mode keeps the index in lockstep with the source Delta table, inserts, updates, and deletes propagate automatically. Direct vector index mode requires you to manage upserts yourself but gives finer control.' },
   { q: 'How does it handle multi-tenancy?', a: 'Through Unity Catalog access controls plus metadata filtering. Documents carry tenant identifiers; queries filter by tenant ID before vector retrieval. For strict isolation, use separate indexes per tenant. For soft isolation, filtered shared indexes are fine.' },
 ];
 
@@ -20,7 +20,7 @@ const relatedTopics = [
 <TopicShell
   title="Mosaic AI Vector Search: A Practitioner's Guide"
   metaTitle="Mosaic AI Vector Search (2026): Indexes, Embeddings, Hybrid Search, Cost"
-  description="Complete 2026 guide to Mosaic AI Vector Search on Databricks — index design, embedding model selection, hybrid retrieval, performance tuning, and the cost model that actually predicts your bill."
+  description="Complete 2026 guide to Mosaic AI Vector Search on Databricks, index design, embedding model selection, hybrid retrieval, performance tuning, and the cost model that actually predicts your bill."
   keywords={[
     'mosaic ai vector search',
     'databricks vector search',
@@ -35,7 +35,7 @@ const relatedTopics = [
     'databricks vector store',
     'vector search cost',
   ]}
-  intro="Vector search is the substrate of every Databricks RAG and agent system. Mosaic AI Vector Search is the native option — and in most cases the right one. This guide covers Delta-sync vs direct-access indexes, embedding choice, hybrid retrieval, and the operational mechanics."
+  intro="Vector search is the substrate of every Databricks RAG and agent system. Mosaic AI Vector Search is the native option, and in most cases the right one. This guide covers Delta-sync vs direct-access indexes, embedding choice, hybrid retrieval, and the operational mechanics."
   volume="v4"
   faqs={faqs}
   relatedTopics={relatedTopics}
@@ -53,7 +53,7 @@ const relatedTopics = [
 
   <p>
     Of all the new primitives Databricks shipped over the past few years, Mosaic AI Vector Search is
-    the one with the highest leverage. It removed an entire integration tax — the constant pain of
+    the one with the highest leverage. It removed an entire integration tax, the constant pain of
     keeping an external vector DB in sync with the Delta tables that fed it. For Databricks-resident
     data in 2026, the default is to use Vector Search and ask "do I have a reason not to?"
   </p>
@@ -65,14 +65,14 @@ const relatedTopics = [
   </p>
 
   <ol>
-    <li><strong>The endpoint</strong> — a serving cluster that hosts one or more indexes.</li>
-    <li><strong>The index</strong> — the queryable representation of vectors plus metadata.</li>
-    <li><strong>The source</strong> — either a Delta table (Delta Sync index) or your own upsert calls (Direct Vector Access index).</li>
+    <li><strong>The endpoint</strong>, a serving cluster that hosts one or more indexes.</li>
+    <li><strong>The index</strong>, the queryable representation of vectors plus metadata.</li>
+    <li><strong>The source</strong>, either a Delta table (Delta Sync index) or your own upsert calls (Direct Vector Access index).</li>
   </ol>
 
   <p>
     Delta Sync is the default and right answer for most cases. You point an index at a Delta table
-    with a text column, choose an embedding model, and Databricks handles the rest — embedding,
+    with a text column, choose an embedding model, and Databricks handles the rest, embedding,
     indexing, syncing on source changes. Updates propagate within minutes.
   </p>
 
@@ -89,8 +89,8 @@ const relatedTopics = [
   </p>
 
   <ul>
-    <li><strong>Storage-optimized</strong> — designed for very large indexes (100M+ rows) with moderate QPS. Lower DBU cost per row, higher latency per query. Right answer for "we have a lot of data and search isn't the main bottleneck."</li>
-    <li><strong>Performance-optimized</strong> — lower latency, higher QPS, higher cost per row. Right answer for user-facing applications with strict latency requirements.</li>
+    <li><strong>Storage-optimized</strong>, designed for very large indexes (100M+ rows) with moderate QPS. Lower DBU cost per row, higher latency per query. Right answer for "we have a lot of data and search isn't the main bottleneck."</li>
+    <li><strong>Performance-optimized</strong>, lower latency, higher QPS, higher cost per row. Right answer for user-facing applications with strict latency requirements.</li>
   </ul>
 
   <p>
@@ -121,7 +121,7 @@ const relatedTopics = [
   <p>
     Pure vector search is good at semantic similarity, bad at exact matches. "Show me documents about
     Q3 2025" works fine for semantic intent but fails on the literal token <code>Q3 2025</code>.
-    Identifiers, product codes, dates, technical terms — vectors smooth them out.
+    Identifiers, product codes, dates, technical terms, vectors smooth them out.
   </p>
 
   <p>
@@ -138,7 +138,7 @@ const relatedTopics = [
   <h2>Metadata filtering and where it pays off</h2>
 
   <p>
-    Vector Search supports filtering on metadata columns at query time — by tenant, by date range,
+    Vector Search supports filtering on metadata columns at query time, by tenant, by date range,
     by document type. The filter is applied during retrieval, not after. This matters more than it
     sounds: post-filtering a top-k vector retrieval gives you fewer-than-k results when the filter
     is restrictive, which silently degrades quality.
@@ -176,7 +176,7 @@ const relatedTopics = [
   <ul>
     <li>End-to-end ingestion pipeline with idempotent re-indexing.</li>
     <li>Embedding model benchmarking on three domains.</li>
-    <li>Hybrid search tuning — when to weight vector vs keyword.</li>
+    <li>Hybrid search tuning, when to weight vector vs keyword.</li>
     <li>Multi-tenant index design patterns.</li>
     <li>Performance optimization: chunking, batch sizes, endpoint sizing.</li>
     <li>Cost model with three traffic-tier examples.</li>

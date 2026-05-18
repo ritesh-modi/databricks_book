@@ -4,9 +4,9 @@ interface Props {
   alt: string;
   caption: string;
   source?: string;
-  /** Intrinsic image width in px — defaults to 800 (the book's standard figure width). */
+  /** Intrinsic image width in px, defaults to 800 (the book's standard figure width). */
   width?: number;
-  /** Intrinsic image height in px — set explicitly to prevent CLS. */
+  /** Intrinsic image height in px, set explicitly to prevent CLS. */
   height?: number;
 }
 const { src, alt, caption, source, width = 800, height = 480 } = Astro.props;

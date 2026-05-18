@@ -5,8 +5,8 @@ import BookFigure from '../../components/BookFigure.astro';
 const faqs = [
   { q: 'What is Lakeflow SDP?', a: 'Lakeflow Spark Declarative Pipelines (SDP) is the rename of Delta Live Tables. You declare the tables and the transformations between them; the engine handles ordering, incremental computation, retries, and quality enforcement. It is the default way to build bronze → silver → gold on Databricks in 2026.' },
   { q: 'How does SDP differ from regular Spark Structured Streaming?', a: 'You write the transformation, not the orchestration. SDP figures out which tables are streaming vs materialized, how to checkpoint, when to refresh, and how to apply quality expectations. You stop maintaining the glue code and start declaring the lineage.' },
-  { q: 'What are expectations in SDP?', a: 'Inline data-quality constraints — `EXPECT amount > 0` or `EXPECT_OR_DROP customer_id IS NOT NULL`. SDP enforces them during ingestion: track-only, drop-bad-rows, or fail-the-update. The result is a quality contract that lives next to the transformation instead of in a separate dbt test or a downstream alert.' },
-  { q: 'When should I use SDP vs dbt on Databricks?', a: "dbt is great when your team is already deep in SQL-first development and you want batch warehouse-style modeling on a SQL Warehouse. SDP wins when you have streaming or near-real-time data, want incremental materialization out of the box, or want a single declarative description of bronze → silver → gold. They coexist — dbt for the gold layer marts, SDP for the streaming bronze/silver pipeline that feeds it, is a common combination." },
+  { q: 'What are expectations in SDP?', a: 'Inline data-quality constraints, `EXPECT amount > 0` or `EXPECT_OR_DROP customer_id IS NOT NULL`. SDP enforces them during ingestion: track-only, drop-bad-rows, or fail-the-update. The result is a quality contract that lives next to the transformation instead of in a separate dbt test or a downstream alert.' },
+  { q: 'When should I use SDP vs dbt on Databricks?', a: "dbt is great when your team is already deep in SQL-first development and you want batch warehouse-style modeling on a SQL Warehouse. SDP wins when you have streaming or near-real-time data, want incremental materialization out of the box, or want a single declarative description of bronze → silver → gold. They coexist, dbt for the gold layer marts, SDP for the streaming bronze/silver pipeline that feeds it, is a common combination." },
   { q: 'Can SDP run on serverless compute?', a: 'Yes, and that\'s the default in 2026. Serverless SDP pipelines start faster, scale better under bursty load, and remove the cluster-tuning step entirely. Classic compute remains available for workloads that need specific runtime versions or VPC/customer-managed-key configurations.' },
   { q: 'How do I do change data capture in SDP?', a: 'Use `APPLY CHANGES INTO` for merge-style CDC from CDC sources (Debezium, Lakeflow Connect ingestion). It handles late-arriving events, type-2 history if you ask for it, and dedup. The whole CDC story collapses into ten lines of SQL.' },
 ];
@@ -22,7 +22,7 @@ const relatedTopics = [
 <TopicShell
   title="Lakeflow Spark Declarative Pipelines (SDP) on Databricks (2026)"
   metaTitle="Lakeflow SDP (2026): Declarative Pipelines on Databricks"
-  description="A practitioner guide to Lakeflow Spark Declarative Pipelines on Databricks in 2026 — declarative bronze/silver/gold, streaming tables, quality expectations, APPLY CHANGES for CDC, and how SDP coexists with dbt."
+  description="A practitioner guide to Lakeflow Spark Declarative Pipelines on Databricks in 2026, declarative bronze/silver/gold, streaming tables, quality expectations, APPLY CHANGES for CDC, and how SDP coexists with dbt."
   keywords={[
     'lakeflow sdp',
     'spark declarative pipelines',
@@ -38,7 +38,7 @@ const relatedTopics = [
     'lakeflow sdp 2026',
   ]}
   volume="v3"
-  intro="Lakeflow Spark Declarative Pipelines — the platform formerly known as Delta Live Tables — is how data engineering on Databricks gets written in 2026. You declare the tables and the transformations; the engine handles incremental refresh, streaming, quality enforcement, change data capture, and the dependency graph. This is the practitioner-level guide: when to reach for SDP, what its operational shape is, where it beats dbt and where they pair, and the patterns that hold up at scale."
+  intro="Lakeflow Spark Declarative Pipelines, the platform formerly known as Delta Live Tables, is how data engineering on Databricks gets written in 2026. You declare the tables and the transformations; the engine handles incremental refresh, streaming, quality enforcement, change data capture, and the dependency graph. This is the practitioner-level guide: when to reach for SDP, what its operational shape is, where it beats dbt and where they pair, and the patterns that hold up at scale."
   faqs={faqs}
   relatedTopics={relatedTopics}
   wordCount={1900}
@@ -63,8 +63,8 @@ const relatedTopics = [
 
   <h2>What you actually write</h2>
   <p>
-    A pipeline is a notebook (or a set of them) where each cell declares a table — streaming or
-    materialized — and the transformation that produces it. The engine reads the whole notebook, builds
+    A pipeline is a notebook (or a set of them) where each cell declares a table, streaming or
+    materialized, and the transformation that produces it. The engine reads the whole notebook, builds
     the DAG, figures out which tables need full refresh and which can be incremental, schedules the work,
     runs the quality expectations, and writes everything into Unity Catalog. You write the SQL or
     PySpark. The runtime does the orchestration.
@@ -73,13 +73,13 @@ const relatedTopics = [
   <BookFigure
     src="/images/figures/ch32_fig1_streaming_vs_mv.png"
     alt="Two refresh shapes: streaming tables append per row, materialized views recompute on schedule"
-    caption="One input, two refresh shapes. Streaming tables append every arriving row; materialized views recompute the whole result on schedule. Cost scales differently — pick the shape that matches the workload."
+    caption="One input, two refresh shapes. Streaming tables append every arriving row; materialized views recompute the whole result on schedule. Cost scales differently, pick the shape that matches the workload."
     source="Figure 32.1 · Volume 3, Chapter 32"
   />
 
   <h2>Streaming tables vs materialized views</h2>
   <p>
-    Two table types matter. A <strong>streaming table</strong> is append-only and incremental — it
+    Two table types matter. A <strong>streaming table</strong> is append-only and incremental, it
     processes new rows since the last update. A <strong>materialized view</strong> recomputes its
     definition either incrementally (where SDP can prove correctness) or as a full refresh. Most bronze
     layers are streaming tables (raw events landing forever). Most silver layers are streaming tables with
@@ -94,7 +94,7 @@ const relatedTopics = [
     (drop the row, log it), and fail-the-update (halt the pipeline). The right mix is per-pipeline:
     bronze gets track-only because the goal is fidelity; silver gets drop-or-fail because the goal is
     quality; gold rarely needs them because the silver contract already enforced what mattered. The
-    expectations show up in the SDP UI and in lineage automatically — your data quality is no longer a
+    expectations show up in the SDP UI and in lineage automatically, your data quality is no longer a
     separate dashboard you forget to look at.
   </p>
 
@@ -140,13 +140,13 @@ STORED AS SCD TYPE 2;`}</code></pre>
     default. Triggered (event-driven) and continuous modes are both available; continuous is for
     sub-minute latency, triggered is for the 90% of pipelines that just need to fire on data arrival or
     a schedule. The Lakeflow Pipeline UI surfaces lineage, run history, expectation violations, and
-    per-table refresh status — the operational view you used to assemble from five separate dashboards.
+    per-table refresh status, the operational view you used to assemble from five separate dashboards.
   </p>
 
   <h2>What's in Volume 3 on this</h2>
   <p>
     Two chapters and the running retail-analytics example. Chapter 31 covers ingestion with Auto Loader
-    and Lakeflow Connect — the source layer that feeds SDP. Chapter 32 is SDP end-to-end: streaming
+    and Lakeflow Connect, the source layer that feeds SDP. Chapter 32 is SDP end-to-end: streaming
     tables, materialized views, expectations, <code>APPLY CHANGES</code>, and a full worked pipeline
     that takes the retail event stream from raw landing to gold-layer aggregations ready for
     <a href="/topics/lakeflow-jobs/">Lakeflow Jobs</a> to schedule downstream consumers.

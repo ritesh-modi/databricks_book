@@ -426,7 +426,7 @@ Make this volume-specific (each Book schema has its own `aggregateRating`). Upda
 
 **Star ratings in SERPs roughly double organic CTR.** This single field is the highest-leverage post-launch SEO addition.
 
-### Step 7 — Launch the blog cadence (Week 2 onwards, ongoing)
+### Step 7 - Launch the blog cadence (Week 2 onwards, ongoing)
 
 Topic pages catch the terminal queries. Blog posts catch the long tail. Without a blog cadence, the site plateaus in 90 days. Recommended first 6 posts:
 

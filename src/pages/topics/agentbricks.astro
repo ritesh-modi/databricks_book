@@ -3,12 +3,12 @@ import TopicShell from '../../components/TopicShell.astro';
 import BookFigure from '../../components/BookFigure.astro';
 
 const faqs = [
-  { q: 'What is Databricks AgentBricks?', a: "AgentBricks is Databricks' production agent platform — a framework for defining, evaluating, deploying, and observing LLM-backed agents on Databricks infrastructure. It provides primitives for tool calling, memory, evaluation, and serving, with native integration to MLflow tracing and Unity Catalog governance." },
-  { q: 'How does AgentBricks compare to LangChain or LangGraph?', a: 'AgentBricks is opinionated about evaluation, observability, and serving — the operational layer. LangChain and LangGraph are more flexible at the orchestration layer but leave evaluation, deployment, and monitoring to you. Most production teams on Databricks in 2026 use AgentBricks for the deploy/observe story and bring orchestration logic into it.' },
+  { q: 'What is Databricks AgentBricks?', a: "AgentBricks is Databricks' production agent platform, a framework for defining, evaluating, deploying, and observing LLM-backed agents on Databricks infrastructure. It provides primitives for tool calling, memory, evaluation, and serving, with native integration to MLflow tracing and Unity Catalog governance." },
+  { q: 'How does AgentBricks compare to LangChain or LangGraph?', a: 'AgentBricks is opinionated about evaluation, observability, and serving, the operational layer. LangChain and LangGraph are more flexible at the orchestration layer but leave evaluation, deployment, and monitoring to you. Most production teams on Databricks in 2026 use AgentBricks for the deploy/observe story and bring orchestration logic into it.' },
   { q: 'Can I define tools that call my Lakehouse data?', a: "Yes. Tools in AgentBricks can call any function, including SQL warehouses, Delta tables via the Databricks SQL connector, Mosaic AI Vector Search indexes, and Unity Catalog functions. Tool execution inherits the agent's identity and Unity Catalog permissions." },
   { q: 'How do I evaluate an AgentBricks agent?', a: 'Through MLflow Evaluate with agent-specific judges: tool-call correctness, answer relevance, faithfulness, and trajectory quality. Build a curated trajectory eval set (input → expected tool calls → expected final answer) and run it on every change to prompts or tools.' },
-  { q: 'Does AgentBricks support multi-agent systems?', a: 'Yes. You can compose agents — one agent calls another as a tool, or a supervisor agent routes to specialists. See the multi-agent systems topic for design tradeoffs and orchestration patterns.' },
-  { q: 'How does AgentBricks handle memory?', a: 'AgentBricks supports short-term conversation memory and long-term memory backed by Delta tables. Memory implementations are pluggable — you can use the built-in primitives or integrate with vector search for semantic memory.' },
+  { q: 'Does AgentBricks support multi-agent systems?', a: 'Yes. You can compose agents, one agent calls another as a tool, or a supervisor agent routes to specialists. See the multi-agent systems topic for design tradeoffs and orchestration patterns.' },
+  { q: 'How does AgentBricks handle memory?', a: 'AgentBricks supports short-term conversation memory and long-term memory backed by Delta tables. Memory implementations are pluggable, you can use the built-in primitives or integrate with vector search for semantic memory.' },
 ];
 
 const relatedTopics = [
@@ -22,7 +22,7 @@ const relatedTopics = [
 <TopicShell
   title="AgentBricks: Production Agents on Databricks"
   metaTitle="Databricks AgentBricks (2026): Build, Evaluate, Deploy Agents"
-  description="Complete guide to Databricks AgentBricks in 2026 — the architecture, tool calling, memory, evaluation, deployment, and operational patterns for shipping production agents on the Lakehouse."
+  description="Complete guide to Databricks AgentBricks in 2026, the architecture, tool calling, memory, evaluation, deployment, and operational patterns for shipping production agents on the Lakehouse."
   keywords={[
     'agentbricks',
     'databricks agentbricks',
@@ -37,7 +37,7 @@ const relatedTopics = [
     'agentbricks 2026',
     'lakehouse agents',
   ]}
-  intro="Agent Bricks is the production agent platform on Databricks — opinionated about evaluation, observability, and serving. This guide covers the architecture, the patterns that work, and the operational mechanics. Most importantly: when to use it, and when not to."
+  intro="Agent Bricks is the production agent platform on Databricks, opinionated about evaluation, observability, and serving. This guide covers the architecture, the patterns that work, and the operational mechanics. Most importantly: when to use it, and when not to."
   volume="v4"
   faqs={faqs}
   relatedTopics={relatedTopics}
@@ -56,7 +56,7 @@ const relatedTopics = [
 
   <p>
     Agents are the natural evolution of RAG. The moment your system needs to decide what to retrieve,
-    call non-retrieval tools, or reason across multiple steps, you're building an agent — whether you
+    call non-retrieval tools, or reason across multiple steps, you're building an agent, whether you
     call it that or not. <strong>AgentBricks</strong> is Databricks' answer to "what does the
     production version look like?"
   </p>
@@ -64,8 +64,8 @@ const relatedTopics = [
   <p>
     This isn't a rebranded chat wrapper. AgentBricks is opinionated about the parts of agent
     engineering that everyone underinvests in: evaluation, tracing, deployment, governance. The
-    orchestration logic is comparatively simple. The hard parts — knowing when your agent is
-    silently regressing, governing what data it can touch, deploying without downtime — are where
+    orchestration logic is comparatively simple. The hard parts, knowing when your agent is
+    silently regressing, governing what data it can touch, deploying without downtime, are where
     AgentBricks earns its keep.
   </p>
 
@@ -76,10 +76,10 @@ const relatedTopics = [
   </p>
 
   <ol>
-    <li><strong>Agent definition</strong> — declarative spec for an agent: system prompt, tools, model choice, memory policy.</li>
-    <li><strong>Tool calling</strong> — a typed interface for connecting agents to functions, SQL endpoints, vector indexes, and external APIs.</li>
-    <li><strong>Evaluation</strong> — first-class integration with MLflow Evaluate, including agent-specific judges (trajectory correctness, tool-call accuracy, faithfulness).</li>
-    <li><strong>Deployment & tracing</strong> — agents deploy to Databricks Model Serving. Every interaction is traced through MLflow.</li>
+    <li><strong>Agent definition</strong>, declarative spec for an agent: system prompt, tools, model choice, memory policy.</li>
+    <li><strong>Tool calling</strong>, a typed interface for connecting agents to functions, SQL endpoints, vector indexes, and external APIs.</li>
+    <li><strong>Evaluation</strong>, first-class integration with MLflow Evaluate, including agent-specific judges (trajectory correctness, tool-call accuracy, faithfulness).</li>
+    <li><strong>Deployment & tracing</strong>, agents deploy to Databricks Model Serving. Every interaction is traced through MLflow.</li>
   </ol>
 
   <p>
@@ -90,8 +90,8 @@ const relatedTopics = [
   <h2>Tools are where most agents fail in production</h2>
 
   <p>
-    A working agent depends on its tools more than its model. Bad tools — unclear names, ambiguous
-    parameters, silent failures — produce bad agents regardless of how good the LLM is.
+    A working agent depends on its tools more than its model. Bad tools, unclear names, ambiguous
+    parameters, silent failures, produce bad agents regardless of how good the LLM is.
   </p>
 
   <p>
@@ -102,7 +102,7 @@ const relatedTopics = [
   </p>
 
   <p>
-    On Databricks specifically, tool implementations can pull directly from the Lakehouse — Unity
+    On Databricks specifically, tool implementations can pull directly from the Lakehouse, Unity
     Catalog functions, SQL warehouses, Mosaic AI Vector Search indexes, Delta tables. Tools inherit
     the agent's Unity Catalog identity, so governance just works. No more "the agent has god mode in
     production" antipattern.
@@ -111,7 +111,7 @@ const relatedTopics = [
   <BookFigure
     src="/images/figures/ch51_fig2_cost_quality_frontier.svg"
     alt="Three operating points on the cost-quality frontier: cost-sensitive 78% at 1x, balanced 90% at 4x, quality-first 94% at 9x"
-    caption="The cost-quality frontier. Three configurations Agent Bricks typically picks. Choose the operating point your business can tolerate — Agent Bricks tunes around it."
+    caption="The cost-quality frontier. Three configurations Agent Bricks typically picks. Choose the operating point your business can tolerate, Agent Bricks tunes around it."
     source="Figure 51.2 · Volume 4, Chapter 51"
   />
 
@@ -122,9 +122,9 @@ const relatedTopics = [
   </p>
 
   <ul>
-    <li><strong>Built-in judges</strong> — answer relevance, faithfulness, tool-call correctness, trajectory quality.</li>
-    <li><strong>Custom judges</strong> — define your own (LLM-as-judge or rule-based) and version them.</li>
-    <li><strong>Regression testing</strong> — run the eval set against every agent revision; track results in MLflow.</li>
+    <li><strong>Built-in judges</strong>, answer relevance, faithfulness, tool-call correctness, trajectory quality.</li>
+    <li><strong>Custom judges</strong>, define your own (LLM-as-judge or rule-based) and version them.</li>
+    <li><strong>Regression testing</strong>, run the eval set against every agent revision; track results in MLflow.</li>
   </ul>
 
   <p>
@@ -142,10 +142,10 @@ const relatedTopics = [
   </p>
 
   <ul>
-    <li><strong>None</strong> — stateless agent. Right answer for many tasks.</li>
-    <li><strong>Conversational</strong> — last N turns. Right answer for chat-style interactions.</li>
-    <li><strong>Summarized</strong> — periodic summarization compresses long conversations.</li>
-    <li><strong>Semantic / long-term</strong> — vector-backed memory store. Useful for agents that need recall across sessions.</li>
+    <li><strong>None</strong>, stateless agent. Right answer for many tasks.</li>
+    <li><strong>Conversational</strong>, last N turns. Right answer for chat-style interactions.</li>
+    <li><strong>Summarized</strong>, periodic summarization compresses long conversations.</li>
+    <li><strong>Semantic / long-term</strong>, vector-backed memory store. Useful for agents that need recall across sessions.</li>
   </ul>
 
   <p>
@@ -178,7 +178,7 @@ const relatedTopics = [
   <ul>
     <li>If you're not on Databricks, obviously not.</li>
     <li>If your agent is mostly orchestrating a complex workflow with many branches and recovery paths, a workflow engine (LangGraph, Temporal) may be a better fit, with AgentBricks called as a sub-component.</li>
-    <li>If you have extremely tight latency budgets (sub-100ms), the agent framework overhead may be too high — pure RAG might be the answer.</li>
+    <li>If you have extremely tight latency budgets (sub-100ms), the agent framework overhead may be too high, pure RAG might be the answer.</li>
   </ul>
 
   <p>
@@ -192,12 +192,12 @@ const relatedTopics = [
   </p>
 
   <ul>
-    <li>Building a working agent from zero — system prompt, tools, memory, evaluation.</li>
+    <li>Building a working agent from zero, system prompt, tools, memory, evaluation.</li>
     <li>Designing tool interfaces that the model actually uses correctly.</li>
     <li>The MLflow evaluation harness for agent regression testing.</li>
     <li>Deploying with traffic splitting and observability.</li>
     <li>Composing single agents into <a href="/topics/multi-agent-systems/">multi-agent systems</a>.</li>
-    <li>Common production failure modes — runaway loops, tool misfires, context bloat — and how to detect them.</li>
+    <li>Common production failure modes, runaway loops, tool misfires, context bloat, and how to detect them.</li>
   </ul>
 
 </TopicShell>

@@ -3,12 +3,12 @@ import TopicShell from '../../components/TopicShell.astro';
 import BookFigure from '../../components/BookFigure.astro';
 
 const faqs = [
-  { q: 'What is MLOps on Databricks in 2026?', a: 'MLOps on Databricks is the operational discipline applied to ML and GenAI workloads on the platform — CI/CD for models, model serving, monitoring, lineage, and the governance that lets you ship and operate AI systems with the same rigor as any other production code.' },
+  { q: 'What is MLOps on Databricks in 2026?', a: 'MLOps on Databricks is the operational discipline applied to ML and GenAI workloads on the platform, CI/CD for models, model serving, monitoring, lineage, and the governance that lets you ship and operate AI systems with the same rigor as any other production code.' },
   { q: 'How do I version control my Databricks notebooks and ML code?', a: 'Databricks Repos integrates with GitHub, GitLab, Azure DevOps, and Bitbucket. Notebooks live as code in your repo. Production deploys come from version-controlled bundles, not interactive notebooks. Asset Bundles (DABs) are the recommended packaging in 2026.' },
-  { q: 'How does model deployment work?', a: 'Trained models are registered to the Unity Catalog Model Registry. Deployment promotes a registered model version to a Model Serving endpoint. Standard patterns — blue-green, traffic splitting, canary — are supported. Rollback is a single API call.' },
+  { q: 'How does model deployment work?', a: 'Trained models are registered to the Unity Catalog Model Registry. Deployment promotes a registered model version to a Model Serving endpoint. Standard patterns, blue-green, traffic splitting, canary, are supported. Rollback is a single API call.' },
   { q: 'How do I monitor production models?', a: 'Three layers: (1) serving-level metrics (latency, error rate, throughput) via the Databricks UI; (2) prediction monitoring (output distribution, prediction drift) via Lakehouse Monitoring; (3) quality monitoring against ground truth when available. Alerts wire into the standard incident systems.' },
-  { q: 'How is GenAI MLOps different from traditional MLOps?', a: "Most differences are in evaluation rather than process. Classical ML monitors precision/recall; GenAI monitors faithfulness, relevance, and groundedness — which require LLM-as-judge evaluation rather than direct metric calculation. The pipeline shape is similar; the metrics are different. MLflow Evaluate handles both." },
-  { q: 'What is a Databricks Asset Bundle (DAB)?', a: 'An Asset Bundle is the recommended way to package Databricks projects — notebooks, workflows, ML pipelines, model deployments — as a versionable, deployable unit. DABs replace the older mix of ad-hoc deployment scripts with a single declarative format.' },
+  { q: 'How is GenAI MLOps different from traditional MLOps?', a: "Most differences are in evaluation rather than process. Classical ML monitors precision/recall; GenAI monitors faithfulness, relevance, and groundedness, which require LLM-as-judge evaluation rather than direct metric calculation. The pipeline shape is similar; the metrics are different. MLflow Evaluate handles both." },
+  { q: 'What is a Databricks Asset Bundle (DAB)?', a: 'An Asset Bundle is the recommended way to package Databricks projects, notebooks, workflows, ML pipelines, model deployments, as a versionable, deployable unit. DABs replace the older mix of ad-hoc deployment scripts with a single declarative format.' },
 ];
 
 const relatedTopics = [
@@ -22,7 +22,7 @@ const relatedTopics = [
 <TopicShell
   title="MLOps on Databricks: The 2026 Operational Playbook"
   metaTitle="MLOps on Databricks (2026): CI/CD, Serving, Monitoring, Asset Bundles"
-  description="Complete 2026 guide to MLOps on Databricks — CI/CD with Asset Bundles, model serving, monitoring, GenAI evaluation, and the operational discipline that separates pilots from production."
+  description="Complete 2026 guide to MLOps on Databricks, CI/CD with Asset Bundles, model serving, monitoring, GenAI evaluation, and the operational discipline that separates pilots from production."
   keywords={[
     'mlops databricks',
     'databricks mlops',
@@ -67,10 +67,10 @@ const relatedTopics = [
   </p>
 
   <ol>
-    <li><strong>Reproducibility</strong> — anyone on the team can rebuild a model bit-for-bit from version control.</li>
-    <li><strong>Deployment</strong> — models reach production through a versioned, reviewable process.</li>
-    <li><strong>Monitoring</strong> — production behavior is observable and changes trigger alerts.</li>
-    <li><strong>Governance</strong> — who deployed what, when, and under what authority is recorded.</li>
+    <li><strong>Reproducibility</strong>, anyone on the team can rebuild a model bit-for-bit from version control.</li>
+    <li><strong>Deployment</strong>, models reach production through a versioned, reviewable process.</li>
+    <li><strong>Monitoring</strong>, production behavior is observable and changes trigger alerts.</li>
+    <li><strong>Governance</strong>, who deployed what, when, and under what authority is recorded.</li>
   </ol>
 
   <p>
@@ -81,14 +81,14 @@ const relatedTopics = [
 
   <p>
     The reproducibility story starts with code in version control. Databricks Repos provides the
-    Git integration — notebooks live as files in GitHub or equivalent. Asset Bundles (DABs)
+    Git integration, notebooks live as files in GitHub or equivalent. Asset Bundles (DABs)
     provide the packaging: a declarative YAML manifest that describes notebooks, workflows, model
     deployments, and their dependencies.
   </p>
 
   <p>
     A bundle is the unit of deployment. The same bundle that an engineer runs locally is what gets
-    deployed to staging and then production. No "but it worked in my notebook" — if it works in
+    deployed to staging and then production. No "but it worked in my notebook", if it works in
     your bundle, it works in CI, it works in prod.
   </p>
 
@@ -100,7 +100,7 @@ const relatedTopics = [
   <BookFigure
     src="/images/figures/ch48_fig1_alias_promotion.png"
     alt="UC model with many immutable versions; three aliases (@dev @staging @prod) point at versions; promotion is alias movement"
-    caption="Promotion is alias movement, not redeploy. Every caller reads its alias, never a version number. Change the alias, change what every caller sees — including rollback, in seconds."
+    caption="Promotion is alias movement, not redeploy. Every caller reads its alias, never a version number. Change the alias, change what every caller sees, including rollback, in seconds."
     source="Figure 48.1 · Volume 4, Chapter 48"
   />
 
@@ -120,8 +120,8 @@ const relatedTopics = [
 
   <p>
     Rollback works the same way: move the <code>@production</code> alias back to the previous
-    version. Model Serving picks up the change without a restart. Standard patterns — blue-green,
-    canary, traffic splitting — all supported.
+    version. Model Serving picks up the change without a restart. Standard patterns, blue-green,
+    canary, traffic splitting, all supported.
   </p>
 
   <p>
@@ -133,7 +133,7 @@ const relatedTopics = [
   <BookFigure
     src="/images/figures/ch49_fig2_monitor_retrain.svg"
     alt="The monitor-to-retrain loop: data and model monitors trigger evaluation, which gates an automated retrain job"
-    caption="The monitoring-to-retraining loop. Drift detection on input features and performance drift on the target trigger an automated retrain — but only after the gate evaluation says the retrain will improve things."
+    caption="The monitoring-to-retraining loop. Drift detection on input features and performance drift on the target trigger an automated retrain, but only after the gate evaluation says the retrain will improve things."
     source="Figure 49.2 · Volume 4, Chapter 49"
   />
 
@@ -144,9 +144,9 @@ const relatedTopics = [
   </p>
 
   <ul>
-    <li><strong>Is the system up?</strong> — latency, error rate, throughput. Standard SRE metrics. Surfaced in the Model Serving UI and Databricks SQL warehouses.</li>
-    <li><strong>Has the input distribution shifted?</strong> — input drift detection. Lakehouse Monitoring continuously computes statistics on serving requests and compares to baseline. Alerts fire when drift exceeds threshold.</li>
-    <li><strong>Are the outputs still correct?</strong> — quality monitoring. Hard in general because ground truth is delayed or unavailable. Patterns: human review on samples, LLM-as-judge for GenAI workloads, downstream KPI tracking.</li>
+    <li><strong>Is the system up?</strong>, latency, error rate, throughput. Standard SRE metrics. Surfaced in the Model Serving UI and Databricks SQL warehouses.</li>
+    <li><strong>Has the input distribution shifted?</strong>, input drift detection. Lakehouse Monitoring continuously computes statistics on serving requests and compares to baseline. Alerts fire when drift exceeds threshold.</li>
+    <li><strong>Are the outputs still correct?</strong>, quality monitoring. Hard in general because ground truth is delayed or unavailable. Patterns: human review on samples, LLM-as-judge for GenAI workloads, downstream KPI tracking.</li>
   </ul>
 
   <p>

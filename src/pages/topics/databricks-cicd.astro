@@ -3,12 +3,12 @@ import TopicShell from '../../components/TopicShell.astro';
 import BookFigure from '../../components/BookFigure.astro';
 
 const faqs = [
-  { q: 'What does CI/CD on Databricks actually look like in 2026?', a: 'GitHub Actions (or your preferred CI) runs against the repo on every PR. It validates the Asset Bundle, runs unit tests on shared library code, and runs notebook-based integration tests against a dev workspace. On merge to main, the CI deploys the bundle to dev, then staging, then prod, each with an approval gate. Authentication is OIDC — short-lived federated tokens, no long-lived PATs.' },
-  { q: 'Why OIDC instead of a Databricks PAT in CI?', a: "PATs are long-lived secrets that have to be rotated, stored in CI secret managers, and revoked when employees leave. OIDC federates the CI environment's identity to Databricks directly — every CI run gets a fresh, scoped token. The risk surface shrinks to zero stored secrets, and audit trails name the workflow run that did the deployment." },
+  { q: 'What does CI/CD on Databricks actually look like in 2026?', a: 'GitHub Actions (or your preferred CI) runs against the repo on every PR. It validates the Asset Bundle, runs unit tests on shared library code, and runs notebook-based integration tests against a dev workspace. On merge to main, the CI deploys the bundle to dev, then staging, then prod, each with an approval gate. Authentication is OIDC, short-lived federated tokens, no long-lived PATs.' },
+  { q: 'Why OIDC instead of a Databricks PAT in CI?', a: "PATs are long-lived secrets that have to be rotated, stored in CI secret managers, and revoked when employees leave. OIDC federates the CI environment's identity to Databricks directly, every CI run gets a fresh, scoped token. The risk surface shrinks to zero stored secrets, and audit trails name the workflow run that did the deployment." },
   { q: 'Do I need a separate Databricks workspace per environment?', a: 'Most mature setups run separate workspaces for dev/staging/prod, with separate UC catalogs and separate service principals. The cost is real but minor compared to the safety it buys. For smaller teams, separate UC catalogs in a single workspace is acceptable; just be religious about catalog-level grants.' },
-  { q: 'How do I test notebooks in CI?', a: "Two layers. Library code factored out of notebooks into Python modules — those get unit-tested with pytest like any other code. Notebook integration tests run via the Databricks CLI: deploy the bundle to a CI target, trigger the job, assert on the resulting Delta table. The pattern is fast enough that most teams run it on every PR." },
+  { q: 'How do I test notebooks in CI?', a: "Two layers. Library code factored out of notebooks into Python modules, those get unit-tested with pytest like any other code. Notebook integration tests run via the Databricks CLI: deploy the bundle to a CI target, trigger the job, assert on the resulting Delta table. The pattern is fast enough that most teams run it on every PR." },
   { q: 'How do you handle secrets in CI/CD pipelines?', a: 'CI itself runs without long-lived Databricks secrets thanks to OIDC. Application secrets (database passwords, external API keys) live in Databricks secret scopes backed by Azure Key Vault / AWS Secrets Manager / GCP Secret Manager. The pipeline references them by name; the actual values never enter the CI environment.' },
-  { q: 'Should the same pipeline deploy ML models?', a: 'Yes — but with a separate promotion model. Code changes flow through the standard CI pipeline. Model promotion uses MLflow alias changes (move `@prod` to point at the new model version) which can be gated by a CI workflow that runs evaluation, compares against the current `@prod`, and only flips the alias if the new model wins. Covered in <a href="/topics/mlops-on-databricks/">MLOps on Databricks</a>.' },
+  { q: 'Should the same pipeline deploy ML models?', a: 'Yes, but with a separate promotion model. Code changes flow through the standard CI pipeline. Model promotion uses MLflow alias changes (move `@prod` to point at the new model version) which can be gated by a CI workflow that runs evaluation, compares against the current `@prod`, and only flips the alias if the new model wins. Covered in <a href="/topics/mlops-on-databricks/">MLOps on Databricks</a>.' },
 ];
 
 const relatedTopics = [
@@ -22,7 +22,7 @@ const relatedTopics = [
 <TopicShell
   title="CI/CD on Databricks: GitHub Actions, OIDC, and Asset-Bundle Deployment (2026)"
   metaTitle="Databricks CI/CD (2026): GitHub Actions + OIDC + Asset Bundles"
-  description="A practitioner guide to CI/CD on Databricks in 2026 — Asset Bundle deployment, OIDC federation with GitHub Actions, multi-environment promotion, testing strategy, and how to keep long-lived PATs out of your pipeline."
+  description="A practitioner guide to CI/CD on Databricks in 2026, Asset Bundle deployment, OIDC federation with GitHub Actions, multi-environment promotion, testing strategy, and how to keep long-lived PATs out of your pipeline."
   keywords={[
     'databricks ci/cd',
     'databricks github actions',
@@ -54,8 +54,8 @@ const relatedTopics = [
   <p>
     Every team adopts CI/CD on Databricks the same way: they try to wire it up the way they did
     elsewhere, hit two specific issues, and rebuild from the ground up. The first issue is
-    authentication — personal access tokens don't belong in a CI environment but they're the path of
-    least resistance. The second is testing — notebooks aren't naturally testable. Both have clean
+    authentication, personal access tokens don't belong in a CI environment but they're the path of
+    least resistance. The second is testing, notebooks aren't naturally testable. Both have clean
     solutions in 2026, and once you have them, the rest of the pipeline is straightforward.
   </p>
 
@@ -146,7 +146,7 @@ jobs:
   <ul>
     <li>Separate workspaces for dev / staging / prod.</li>
     <li>Separate UC catalogs (<code>dev_retail</code>, <code>staging_retail</code>, <code>prod_retail</code>) plus a global <code>shared_catalog</code> for cross-environment reference data.</li>
-    <li>One SP per environment per service — narrow grants, named after the workload they own.</li>
+    <li>One SP per environment per service, narrow grants, named after the workload they own.</li>
     <li>OIDC federation policies that grant only the specific SP each workflow needs.</li>
   </ul>
 

@@ -7,7 +7,7 @@ const faqs = [
   { q: 'What is Unity Catalog?', a: 'Unity Catalog is the unified governance layer across all Databricks data, ML, and AI assets. Three-level naming (catalog.schema.object), fine-grained ACLs, lineage tracking, and audit. Every serious Databricks deployment in 2026 runs through Unity Catalog.' },
   { q: 'What is medallion architecture?', a: 'Medallion is the three-layer pattern that organizes Lakehouse data: Bronze (raw ingestion, append-only), Silver (cleaned, conformed, deduplicated), Gold (business-level aggregates and feature tables). Data flows Bronze → Silver → Gold through scheduled pipelines.' },
   { q: 'How does the Lakehouse compare to Snowflake or BigQuery?', a: "Snowflake and BigQuery are data warehouses with growing data-lake features. The Lakehouse is a data lake with growing warehouse features. The practical difference: Lakehouse data is in open formats you own, in your cloud account; warehouse data is in a proprietary internal format. For AI/ML-heavy workloads, the Lakehouse's openness usually wins." },
-  { q: 'Do I need to use Spark to use the Lakehouse?', a: "No. Delta Lake works from Spark, but also from Python directly via delta-rs, from Trino/Presto, from any engine that can read Delta. On Databricks specifically, you can use SQL warehouses, DBT, Python notebooks, or Spark — same underlying tables." },
+  { q: 'Do I need to use Spark to use the Lakehouse?', a: "No. Delta Lake works from Spark, but also from Python directly via delta-rs, from Trino/Presto, from any engine that can read Delta. On Databricks specifically, you can use SQL warehouses, DBT, Python notebooks, or Spark, same underlying tables." },
 ];
 
 const relatedTopics = [
@@ -20,7 +20,7 @@ const relatedTopics = [
 <TopicShell
   title="Lakehouse Architecture on Databricks: A Practitioner's Guide"
   metaTitle="Databricks Lakehouse Architecture (2026): Delta Lake, Unity Catalog, Medallion"
-  description="Practitioner guide to Lakehouse architecture on Databricks in 2026 — Delta Lake, Unity Catalog, medallion design, and the substrate that makes everything else work."
+  description="Practitioner guide to Lakehouse architecture on Databricks in 2026, Delta Lake, Unity Catalog, medallion design, and the substrate that makes everything else work."
   keywords={[
     'databricks lakehouse',
     'lakehouse architecture',
@@ -51,39 +51,39 @@ const relatedTopics = [
 >
 
   <p>
-    Before you build a RAG system, train a model, or deploy an agent, you need data — well-shaped,
+    Before you build a RAG system, train a model, or deploy an agent, you need data, well-shaped,
     governable, performant data. On Databricks, that's the Lakehouse: a Delta Lake storage layer
     over cloud object storage, governed by Unity Catalog, organized by medallion architecture.
   </p>
 
   <p>
     The interesting claim of the Lakehouse architecture isn't that you can do both analytics and ML
-    on it — that's been true of various platforms for years. The interesting claim is that you can
+    on it, that's been true of various platforms for years. The interesting claim is that you can
     do them on the same data without copying it, without exporting it to a separate AI/ML platform,
     without giving up the governance and consistency you'd have in a warehouse.
   </p>
 
-  <h2>Delta Lake — what it actually does</h2>
+  <h2>Delta Lake, what it actually does</h2>
 
   <p>
     Delta Lake adds four things to plain Parquet files:
   </p>
 
   <ol>
-    <li><strong>ACID transactions</strong> — concurrent writers don't corrupt the table.</li>
-    <li><strong>Schema enforcement and evolution</strong> — bad data is rejected; intentional schema changes are tracked.</li>
-    <li><strong>Time travel</strong> — query any historical version of the table.</li>
-    <li><strong>Efficient updates and deletes</strong> — Parquet alone is immutable; Delta makes updates and deletes practical.</li>
+    <li><strong>ACID transactions</strong>, concurrent writers don't corrupt the table.</li>
+    <li><strong>Schema enforcement and evolution</strong>, bad data is rejected; intentional schema changes are tracked.</li>
+    <li><strong>Time travel</strong>, query any historical version of the table.</li>
+    <li><strong>Efficient updates and deletes</strong>, Parquet alone is immutable; Delta makes updates and deletes practical.</li>
   </ol>
 
   <p>
     The combination changes what you can do with a data lake. Streaming inserts and batch updates
     against the same table. Re-running yesterday's report exactly as it ran yesterday. Deleting a
-    specific user's data without rewriting the universe. These aren't novelties — they're the
+    specific user's data without rewriting the universe. These aren't novelties, they're the
     operational table-stakes that warehouses had and lakes didn't.
   </p>
 
-  <h2>Unity Catalog — the governance layer that everything else depends on</h2>
+  <h2>Unity Catalog, the governance layer that everything else depends on</h2>
 
   <p>
     Unity Catalog is the part of Databricks 2026 that most teams under-appreciate until they
@@ -96,9 +96,9 @@ const relatedTopics = [
   </p>
 
   <ul>
-    <li><strong>Three-level naming</strong> — <code>catalog.schema.object</code>. Catalogs are typically environments (dev, staging, prod) or business units. Schemas are projects or domains.</li>
-    <li><strong>Fine-grained ACLs</strong> — granted at any level. Row-level and column-level security for sensitive workloads.</li>
-    <li><strong>Lineage</strong> — automatic tracking of which queries produce which tables, which tables feed which models, which models serve which endpoints.</li>
+    <li><strong>Three-level naming</strong>, <code>catalog.schema.object</code>. Catalogs are typically environments (dev, staging, prod) or business units. Schemas are projects or domains.</li>
+    <li><strong>Fine-grained ACLs</strong>, granted at any level. Row-level and column-level security for sensitive workloads.</li>
+    <li><strong>Lineage</strong>, automatic tracking of which queries produce which tables, which tables feed which models, which models serve which endpoints.</li>
   </ul>
 
   <p>
@@ -108,21 +108,21 @@ const relatedTopics = [
     tooling.
   </p>
 
-  <h2>Medallion architecture — three layers, one discipline</h2>
+  <h2>Medallion architecture, three layers, one discipline</h2>
 
   <p>
     Medallion architecture is the convention for organizing Lakehouse data into layers:
   </p>
 
   <ul>
-    <li><strong>Bronze</strong> — raw ingested data, append-only, schema-loose. Everything that comes in lands here. The format mirrors the source.</li>
-    <li><strong>Silver</strong> — cleaned, conformed, deduplicated. Schema-enforced. The version of the data that downstream teams should consume by default.</li>
-    <li><strong>Gold</strong> — business-level aggregates, feature tables, dashboards. Often per-use-case rather than per-team.</li>
+    <li><strong>Bronze</strong>, raw ingested data, append-only, schema-loose. Everything that comes in lands here. The format mirrors the source.</li>
+    <li><strong>Silver</strong>, cleaned, conformed, deduplicated. Schema-enforced. The version of the data that downstream teams should consume by default.</li>
+    <li><strong>Gold</strong>, business-level aggregates, feature tables, dashboards. Often per-use-case rather than per-team.</li>
   </ul>
 
   <p>
     The discipline matters more than the names. The reason teams adopt medallion is that without
-    layering, every consumer ends up reading raw data and applying ad-hoc cleanups — leading to the
+    layering, every consumer ends up reading raw data and applying ad-hoc cleanups, leading to the
     same data being cleaned 17 different ways in 17 different notebooks. Medallion forces the
     cleaning to happen once, in a known place.
   </p>
@@ -153,7 +153,7 @@ const relatedTopics = [
   <p>
     This is the architectural claim: AI and analytics on the same data, governed by the same
     catalog, in the same workspace. Not "AI workloads against an exported snapshot from the
-    warehouse" — actually on the same tables, with consistent semantics.
+    warehouse", actually on the same tables, with consistent semantics.
   </p>
 
   <h2>What the book covers</h2>
@@ -165,7 +165,7 @@ const relatedTopics = [
   <ul>
     <li>Delta Lake operations at the level a senior engineer needs: optimization, partitioning, Z-ordering, vacuum.</li>
     <li>Unity Catalog setup from zero: catalogs, schemas, ACLs, external locations.</li>
-    <li>Medallion in practice — what goes in each layer, where teams cut corners, and the antipatterns that emerge.</li>
+    <li>Medallion in practice, what goes in each layer, where teams cut corners, and the antipatterns that emerge.</li>
     <li>Streaming + batch unification with Auto Loader and Structured Streaming.</li>
     <li>The governance patterns that hold up under audit.</li>
   </ul>

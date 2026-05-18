@@ -3,8 +3,8 @@ import TopicShell from '../../components/TopicShell.astro';
 
 const faqs = [
   { q: 'What is MLflow 3.0?', a: 'MLflow 3.0 is the latest major version, adding native GenAI tracing, agent evaluation primitives, and tighter Databricks integration. It keeps the four pillars of MLflow (tracking, projects, models, registry) but extends them with first-class support for LLM-backed systems.' },
-  { q: 'Why use MLflow on Databricks specifically?', a: "MLflow on Databricks is managed end-to-end. Experiments, models, deployments, and tracing all flow through Unity Catalog with proper governance. You don't run an MLflow tracking server — Databricks does. The same artifacts also work in any non-Databricks environment via open MLflow, so you're never locked in." },
-  { q: 'How does MLflow Tracing work for LLM applications?', a: 'MLflow Tracing captures every model call, retrieval, tool invocation, and intermediate step as a span. For agents and RAG systems, this gives you a complete execution trace per request — visible in the MLflow UI, queryable, and usable as input to evaluation.' },
+  { q: 'Why use MLflow on Databricks specifically?', a: "MLflow on Databricks is managed end-to-end. Experiments, models, deployments, and tracing all flow through Unity Catalog with proper governance. You don't run an MLflow tracking server, Databricks does. The same artifacts also work in any non-Databricks environment via open MLflow, so you're never locked in." },
+  { q: 'How does MLflow Tracing work for LLM applications?', a: 'MLflow Tracing captures every model call, retrieval, tool invocation, and intermediate step as a span. For agents and RAG systems, this gives you a complete execution trace per request, visible in the MLflow UI, queryable, and usable as input to evaluation.' },
   { q: 'What is the MLflow Model Registry used for?', a: 'The Model Registry is the staging area between training and production. Models are registered, versioned, transitioned through stages (Development, Staging, Production), and deployed from the registry. On Databricks, the registry lives in Unity Catalog and inherits its access controls.' },
   { q: 'Can I use MLflow with non-Databricks frameworks?', a: 'Yes. MLflow is open source and framework-agnostic. It tracks experiments and deploys models from PyTorch, TensorFlow, scikit-learn, XGBoost, LightGBM, and the major LLM providers. On Databricks, the integration is tighter, but the same code works elsewhere.' },
   { q: 'How does MLflow Evaluate work for RAG and agents?', a: 'MLflow Evaluate runs a dataset of inputs through your pipeline (RAG, agent, model) and applies a configurable set of judges to score the outputs. Built-in judges cover answer relevance, faithfulness, groundedness, and toxicity. Custom judges can be defined in Python or as LLM-as-judge prompts.' },
@@ -21,7 +21,7 @@ const relatedTopics = [
 <TopicShell
   title="MLflow 3.0 on Databricks: The Complete Guide"
   metaTitle="MLflow 3.0 on Databricks (2026): Tracking, Tracing, Evaluation, Registry"
-  description="Practitioner guide to MLflow 3.0 on Databricks in 2026 — experiment tracking, model registry, LLM tracing, evaluation, and deployment patterns for production ML and GenAI systems."
+  description="Practitioner guide to MLflow 3.0 on Databricks in 2026, experiment tracking, model registry, LLM tracing, evaluation, and deployment patterns for production ML and GenAI systems."
   keywords={[
     'mlflow databricks',
     'mlflow 3.0',
@@ -36,7 +36,7 @@ const relatedTopics = [
     'mlflow agent evaluation',
     'mlflow production',
   ]}
-  intro="MLflow is the connective tissue of every serious ML project on Databricks. The 3.0 release made it the connective tissue for GenAI too — experiments, UC Model Registry, aliases, traces, and evaluation, used together as a system. This guide covers what's new, what matters, and what production teams actually use."
+  intro="MLflow is the connective tissue of every serious ML project on Databricks. The 3.0 release made it the connective tissue for GenAI too, experiments, UC Model Registry, aliases, traces, and evaluation, used together as a system. This guide covers what's new, what matters, and what production teams actually use."
   volume="v4"
   faqs={faqs}
   relatedTopics={relatedTopics}
@@ -56,13 +56,13 @@ const relatedTopics = [
   <p>
     MLflow has done something rare: it stayed useful as the field around it shifted from classical
     ML to deep learning to LLMs. The 3.0 release is the version that makes this explicit. The four
-    pillars are still there — tracking, projects, models, registry — but tracing and evaluation are
+    pillars are still there, tracking, projects, models, registry, but tracing and evaluation are
     now first-class primitives, and the GenAI workflow has its own shape.
   </p>
 
   <p>
     On Databricks specifically, MLflow is the managed runtime for almost every ML and AI artifact in
-    your workspace. Experiments, model versions, traces, evaluations — all governed through Unity
+    your workspace. Experiments, model versions, traces, evaluations, all governed through Unity
     Catalog, accessible through a single API, deployable to a single Model Serving endpoint.
   </p>
 
@@ -73,10 +73,10 @@ const relatedTopics = [
   </p>
 
   <ul>
-    <li><strong>Tracking</strong> — log parameters, metrics, and artifacts from every experiment run.</li>
-    <li><strong>Projects</strong> — package code and dependencies for reproducible execution.</li>
-    <li><strong>Models</strong> — a standardized format for model artifacts, framework-agnostic.</li>
-    <li><strong>Registry</strong> — versioned model storage with stage transitions and approval workflow.</li>
+    <li><strong>Tracking</strong>, log parameters, metrics, and artifacts from every experiment run.</li>
+    <li><strong>Projects</strong>, package code and dependencies for reproducible execution.</li>
+    <li><strong>Models</strong>, a standardized format for model artifacts, framework-agnostic.</li>
+    <li><strong>Registry</strong>, versioned model storage with stage transitions and approval workflow.</li>
   </ul>
 
   <p>
@@ -84,8 +84,8 @@ const relatedTopics = [
   </p>
 
   <ul>
-    <li><strong>Tracing</strong> — span-based execution traces for LLM applications, RAG pipelines, and agents.</li>
-    <li><strong>Evaluation</strong> — opinionated evaluation framework with built-in and custom judges.</li>
+    <li><strong>Tracing</strong>, span-based execution traces for LLM applications, RAG pipelines, and agents.</li>
+    <li><strong>Evaluation</strong>, opinionated evaluation framework with built-in and custom judges.</li>
   </ul>
 
   <p>
@@ -94,7 +94,7 @@ const relatedTopics = [
     the underlying storage.
   </p>
 
-  <h2>Tracking — still the foundation</h2>
+  <h2>Tracking, still the foundation</h2>
 
   <p>
     The tracking API is unchanged in spirit: <code>mlflow.start_run</code>, log params, log metrics,
@@ -118,7 +118,7 @@ const relatedTopics = [
     starting point, not a finish line. Be explicit about what matters for your workload.
   </p>
 
-  <h2>Tracing — the unlock for LLM debugging</h2>
+  <h2>Tracing, the unlock for LLM debugging</h2>
 
   <p>
     The single biggest practical win of MLflow 3.0 is tracing. A RAG system or agent now produces a
@@ -161,14 +161,14 @@ const relatedTopics = [
   <h2>Evaluation: the discipline the field skipped for too long</h2>
 
   <p>
-    For a decade, ML evaluation was straightforward — pick a test set, compute accuracy or AUC, ship
+    For a decade, ML evaluation was straightforward, pick a test set, compute accuracy or AUC, ship
     if the number is high enough. LLM evaluation is harder. There is no single right answer for an
-    open-ended question. Faithfulness, relevance, groundedness, safety — each is a separate judge.
+    open-ended question. Faithfulness, relevance, groundedness, safety, each is a separate judge.
   </p>
 
   <p>
     MLflow Evaluate gives you a structured way to apply many judges in parallel. Built-in judges
-    cover the common cases. Custom judges let you encode domain-specific rules — "did the
+    cover the common cases. Custom judges let you encode domain-specific rules, "did the
     legal-advice answer cite at least one statute?" or "did the medical answer include the dosage
     range?"
   </p>
@@ -178,7 +178,7 @@ const relatedTopics = [
   </p>
 
   <ol>
-    <li>Build an evaluation dataset — input plus expected behavior, not necessarily expected exact output.</li>
+    <li>Build an evaluation dataset, input plus expected behavior, not necessarily expected exact output.</li>
     <li>Define the judges that matter for your use case.</li>
     <li>Run evaluation on every meaningful pipeline change.</li>
     <li>Block deployment if any judge regresses past a threshold.</li>

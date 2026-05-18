@@ -1,7 +1,7 @@
 /**
  * Single source of truth for the series metadata.
  *
- * The site markets a two-volume series — both titled "Databricks for Practitioners".
+ * The site markets a two-volume series, both titled "Databricks for Practitioners".
  * Shared series-level data (title, author, series name) lives in `series`.
  * Per-volume data (subtitles, covers, chapter counts, descriptions) lives in `volumes`.
  *
@@ -21,7 +21,7 @@ export const series = {
     email: 'riteshmodi1310@gmail.com',
   },
   /**
-   * Search engine verification tokens. Empty string means "not yet verified" —
+   * Search engine verification tokens. Empty string means "not yet verified"
    * the meta tag is skipped at build time. Paste the value from each console
    * (the bare token, not the full <meta> tag) when ready.
    */
@@ -77,7 +77,7 @@ export const volumes: Record<'v3' | 'v4', Volume> = {
     fullTitle: `${series.title}: The Production Lakehouse Playbook`,
     seriesSubtitle: 'Databricks Platform & Data Engineering',
     tagline:
-      'Unity Catalog, Lakeflow, and the Databricks Data Intelligence Platform — the production playbook for engineers who already know Spark.',
+      'Unity Catalog, Lakeflow, and the Databricks Data Intelligence Platform, the production playbook for engineers who already know Spark.',
     shortName: 'Volume 3 · The Production Lakehouse',
     chapters: 16,
     chapterRange: 'Ch 22–37',
@@ -123,7 +123,7 @@ export const volumes: Record<'v3' | 'v4', Volume> = {
     fullTitle: `${series.title}: The AI Lakehouse Playbook`,
     seriesSubtitle: 'Databricks Platform & AI Engineering',
     tagline:
-      'Mosaic AI, Agent Bricks, Lakebase, and the production Lakehouse — the 2026 field manual for shipping AI systems on Databricks.',
+      'Mosaic AI, Agent Bricks, Lakebase, and the production Lakehouse, the 2026 field manual for shipping AI systems on Databricks.',
     shortName: 'Volume 4 · The AI Lakehouse',
     chapters: 21,
     chapterRange: 'Ch 38–58',
@@ -142,19 +142,19 @@ export const volumes: Record<'v3' | 'v4', Volume> = {
     keyTopics: [
       'Databricks SQL warehouses, materialized views, Lakehouse Federation',
       'AI/BI Dashboards and the Dashboard Agent',
-      'AI/BI Genie at production scale — grounding, certified answers, evaluation',
-      'AI SQL function family — ai_query, vector_search, ai_parse_document, ai_classify, ai_extract, ai_gen, ai_forecast',
+      'AI/BI Genie at production scale, grounding, certified answers, evaluation',
+      'AI SQL function family, ai_query, vector_search, ai_parse_document, ai_classify, ai_extract, ai_gen, ai_forecast',
       'Model Serving, AI Gateway, and inference tables',
       'Foundation Model APIs and external model federation',
       'Mosaic AI Vector Search and RAG patterns',
-      'MLflow 3 — experiments, UC Model Registry, traces, evaluation',
+      'MLflow 3, experiments, UC Model Registry, traces, evaluation',
       'Feature Store on Unity Catalog with point-in-time lookups',
-      'MLOps — alias-driven promotion, champion/challenger, traffic splitting',
+      'MLOps, alias-driven promotion, champion/challenger, traffic splitting',
       'Lakehouse Monitoring for data and model drift',
-      'Distributed deep learning — TorchDistributor, DeepSpeed, Ray, serverless GPU',
-      'Agent Bricks — classification and information extraction',
+      'Distributed deep learning, TorchDistributor, DeepSpeed, Ray, serverless GPU',
+      'Agent Bricks, classification and information extraction',
       'Multi-Agent Supervisor, MCP, and agent evaluation',
-      'Lakebase — managed Postgres in the Lakehouse',
+      'Lakebase, managed Postgres in the Lakehouse',
       'End-to-end retail-intelligence capstone',
     ],
     audience: [

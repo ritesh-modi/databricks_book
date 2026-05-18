@@ -4,11 +4,11 @@ import BookFigure from '../../components/BookFigure.astro';
 
 const faqs = [
   { q: 'What is Unity Catalog?', a: "Unity Catalog (UC) is Databricks' governance layer for data and AI assets. It introduces a three-level namespace (`catalog.schema.object`), centralizes access control, lineage, audit, and discovery across every workspace in an account, and treats tables, views, volumes, functions, models, metrics, and connections as first-class governed objects." },
-  { q: 'How is Unity Catalog different from the legacy Hive Metastore?', a: 'The Hive Metastore is workspace-scoped, has flat namespaces, and offers no row/column security or lineage. UC is account-scoped, three-level, and covers tables, views, volumes, functions, models, and metrics with grants, ABAC, lineage, and audit logs in system tables. Migration is a one-way ratchet — most teams plan it once and never look back.' },
-  { q: 'What are managed tables vs external tables in UC?', a: 'Managed tables store data in storage that Databricks controls — you only ever interact with them by name; UC owns the layout. External tables point at a path you control (S3, ADLS, GCS) registered via an External Location and Storage Credential. Default to managed unless a specific reason — interoperability with non-Databricks engines, cross-account sharing, regulatory retention — forces external.' },
-  { q: 'How does ABAC work in Unity Catalog?', a: 'ABAC (attribute-based access control) lets you write policies that grant or deny access based on tags attached to securables and identity attributes from the principal. Combined with governed tags (admin-defined vocabularies), it scales much better than per-table grants — instead of granting analyst access to 800 tables, you tag the tables `domain:finance, sensitivity:internal` and write one policy.' },
+  { q: 'How is Unity Catalog different from the legacy Hive Metastore?', a: 'The Hive Metastore is workspace-scoped, has flat namespaces, and offers no row/column security or lineage. UC is account-scoped, three-level, and covers tables, views, volumes, functions, models, and metrics with grants, ABAC, lineage, and audit logs in system tables. Migration is a one-way ratchet, most teams plan it once and never look back.' },
+  { q: 'What are managed tables vs external tables in UC?', a: 'Managed tables store data in storage that Databricks controls, you only ever interact with them by name; UC owns the layout. External tables point at a path you control (S3, ADLS, GCS) registered via an External Location and Storage Credential. Default to managed unless a specific reason, interoperability with non-Databricks engines, cross-account sharing, regulatory retention, forces external.' },
+  { q: 'How does ABAC work in Unity Catalog?', a: 'ABAC (attribute-based access control) lets you write policies that grant or deny access based on tags attached to securables and identity attributes from the principal. Combined with governed tags (admin-defined vocabularies), it scales much better than per-table grants, instead of granting analyst access to 800 tables, you tag the tables `domain:finance, sensitivity:internal` and write one policy.' },
   { q: 'What are UC Volumes?', a: 'Volumes are UC-governed unstructured file storage. Managed volumes for ephemeral or platform-owned files, external volumes for files in an existing cloud bucket. They unlock AI SQL functions like `ai_parse_document` that read PDFs and images, and give you a governed home for model artifacts, ingest staging, and unstructured AI inputs.' },
-  { q: 'Where do I see lineage and audit data?', a: 'Lineage shows up in the Catalog Explorer per object and in column-level lineage views. Audit data lives in the `system.access` and `system.compute` tables — every grant, every read, every job run is queryable as SQL.' },
+  { q: 'Where do I see lineage and audit data?', a: 'Lineage shows up in the Catalog Explorer per object and in column-level lineage views. Audit data lives in the `system.access` and `system.compute` tables, every grant, every read, every job run is queryable as SQL.' },
 ];
 
 const relatedTopics = [
@@ -22,7 +22,7 @@ const relatedTopics = [
 <TopicShell
   title="Unity Catalog: The Practitioner's Guide to Governance, ABAC, Lineage, and Volumes (2026)"
   metaTitle="Unity Catalog (2026): The Practitioner's Guide to ABAC, Lineage, Volumes"
-  description="A complete practitioner guide to Unity Catalog on Databricks in 2026 — the three-level namespace, managed vs external tables, ABAC and governed tags, volumes, lineage, audit, and the migration playbook from Hive Metastore."
+  description="A complete practitioner guide to Unity Catalog on Databricks in 2026, the three-level namespace, managed vs external tables, ABAC and governed tags, volumes, lineage, audit, and the migration playbook from Hive Metastore."
   keywords={[
     'unity catalog',
     'unity catalog tutorial',
@@ -38,7 +38,7 @@ const relatedTopics = [
     'hive metastore to unity catalog',
   ]}
   volume="v3"
-  intro="Unity Catalog stopped being optional in 2024 and became the platform contract in 2026. Every production workload — tables, models, features, dashboards, agents, AI SQL — terminates in UC for grants, lineage, and audit. This is the practitioner-level guide: the object model, the three privilege flavors (SQL grants, ABAC, governed tags), the migration path from HMS, and the patterns that keep UC manageable past a thousand objects."
+  intro="Unity Catalog stopped being optional in 2024 and became the platform contract in 2026. Every production workload, tables, models, features, dashboards, agents, AI SQL, terminates in UC for grants, lineage, and audit. This is the practitioner-level guide: the object model, the three privilege flavors (SQL grants, ABAC, governed tags), the migration path from HMS, and the patterns that keep UC manageable past a thousand objects."
   faqs={faqs}
   relatedTopics={relatedTopics}
   wordCount={2100}
@@ -57,7 +57,7 @@ const relatedTopics = [
 >
   <p>
     Most teams adopting Databricks in 2026 hit the same wall: the platform's surface area is enormous, the
-    runtime is good, the orchestration is good, the AI features look magical — and then six months in,
+    runtime is good, the orchestration is good, the AI features look magical, and then six months in,
     nobody knows who can read what, lineage is a slack thread, and three teams disagree about whether
     a column is PII. Unity Catalog is the layer that resolves all three problems at once. If you treat
     it as a checkbox, it gets in your way. If you treat it as the contract every team writes against,
@@ -67,17 +67,17 @@ const relatedTopics = [
   <BookFigure
     src="/images/figures/ch25_fig1_three_level_namespace.png"
     alt="Diagram of Unity Catalog's three-level namespace: Metastore → Catalog → Schema → Object"
-    caption="The Three-Level Namespace. Every UC reference lands in this tree — main.retail.orders is unambiguous in a way that orders never is."
+    caption="The Three-Level Namespace. Every UC reference lands in this tree, main.retail.orders is unambiguous in a way that orders never is."
     source="Figure 25.1 · Volume 3, Chapter 25"
   />
 
   <h2>The three-level namespace, and why it matters</h2>
   <p>
-    Every UC object lives at <code>catalog.schema.object</code>. The third level — the catalog — is the
+    Every UC object lives at <code>catalog.schema.object</code>. The third level, the catalog, is the
     one that changes how teams operate. A catalog is the boundary across which you stop expecting code
     to "just work" and start designing for explicit federation. Most mature estates use catalogs to
     separate <strong>environment</strong> (dev/staging/prod), <strong>domain</strong> (finance/retail/ops),
-    or both — <code>prod_retail.bronze.orders</code> is unambiguous in a way that <code>orders</code> never
+    or both, <code>prod_retail.bronze.orders</code> is unambiguous in a way that <code>orders</code> never
     is. Workspace-catalog bindings then control which catalogs each workspace can see, so you don't
     accidentally read production data from a development notebook.
   </p>
@@ -91,24 +91,24 @@ const relatedTopics = [
   <p>
     Managed tables store data in UC-controlled storage. Databricks owns the layout, runs predictive
     optimization, handles vacuum and compaction. External tables point at a path you registered through
-    an External Location + Storage Credential. Both are governed identically — the difference is who
+    an External Location + Storage Credential. Both are governed identically, the difference is who
     owns the bytes.
   </p>
   <p>
     Default to managed. The only reasons to choose external in 2026 are: another engine outside
     Databricks needs to read the same files in place, regulatory rules force you to keep data in a
     specific bucket lifecycle, or you have a cross-account sharing setup that Delta Sharing doesn't
-    cover. Otherwise managed wins on every operational axis — better optimization, less to monitor,
+    cover. Otherwise managed wins on every operational axis, better optimization, less to monitor,
     fewer permission seams.
   </p>
 
   <h2>Access control: grants, ABAC, and governed tags</h2>
   <p>
     UC offers three layered ways to grant access. SQL grants (<code>GRANT SELECT ON TABLE foo TO `group`</code>)
-    are the floor — explicit, per-object, easy to audit but painful at scale. ABAC sits on top:
+    are the floor, explicit, per-object, easy to audit but painful at scale. ABAC sits on top:
     you write a policy that says "any table tagged <code>sensitivity:public</code> is readable by everyone in
     the workspace," and you stop maintaining grants per table. Governed tags (GA March 2026) give you the
-    admin-defined vocabulary that makes ABAC trustworthy — anyone can write a string tag, but only
+    admin-defined vocabulary that makes ABAC trustworthy, anyone can write a string tag, but only
     admins can mint a governed tag, so the policy surface stops drifting.
   </p>
   <p>
@@ -124,7 +124,7 @@ const relatedTopics = [
     agent frameworks, but they're the substrate every <a href="/topics/agentbricks/">Agent Bricks</a> and
     <a href="/topics/rag-with-databricks/">RAG</a> system in your workspace will eventually depend on.
     PDFs that <code>ai_parse_document</code> reads. Model artifacts. Ingest staging for files that haven't
-    landed in a table yet. Treat volumes as a first-class object — name them, tag them, grant on them — and
+    landed in a table yet. Treat volumes as a first-class object, name them, tag them, grant on them, and
     your AI pipelines inherit the governance for free.
   </p>
 
@@ -132,8 +132,8 @@ const relatedTopics = [
   <p>
     Column-level lineage in UC isn't a UI feature, it's a system-tables feature. Every read, every grant,
     every job run lands in <code>system.access</code> and <code>system.compute</code>. The first time you
-    write a SQL query that answers "who has read this PII column in the last 30 days?" — and gets a
-    correct answer in seconds — UC stops feeling like overhead. The compliance reviews that used to take
+    write a SQL query that answers "who has read this PII column in the last 30 days?", and gets a
+    correct answer in seconds, UC stops feeling like overhead. The compliance reviews that used to take
     weeks of slack triangulation become a saved query.
   </p>
 
@@ -141,8 +141,8 @@ const relatedTopics = [
   <p>
     There's no good shortcut. The path that works: stand up UC in a new catalog, dual-write the
     high-traffic tables for a sprint, cut readers over, then cut writers over. The tooling
-    (`SYNC SCHEMA`, the UC upgrade wizard) handles the easy 80%. The remaining 20% — code that
-    hardcoded the workspace metastore, jobs running as personal users, ACL diagrams nobody updated — is
+    (`SYNC SCHEMA`, the UC upgrade wizard) handles the easy 80%. The remaining 20%, code that
+    hardcoded the workspace metastore, jobs running as personal users, ACL diagrams nobody updated, is
     where every team loses two weeks. Volume 3 includes the full runbook.
   </p>
 

@@ -6,7 +6,7 @@ GitHub: https://github.com/ritmodi
 Location: Worldwide
 
 /* THANKS */
-Databricks Inc. — for shipping the platform this book documents
+Databricks Inc., for shipping the platform this book documents
 The data engineering and ML practitioner communities
 
 /* SITE */

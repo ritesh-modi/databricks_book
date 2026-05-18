@@ -5,7 +5,7 @@ import BookFigure from '../../components/BookFigure.astro';
 const faqs = [
   { q: 'What is RAG on Databricks?', a: 'RAG (retrieval-augmented generation) on Databricks combines Mosaic AI Vector Search for retrieval, foundation models hosted on Databricks Model Serving, and the broader Lakehouse for data prep and evaluation. The platform handles indexing, embedding, retrieval, generation, and observability through a single integrated stack.' },
   { q: 'Why use Mosaic AI Vector Search instead of an external vector DB?', a: 'It runs against the same Delta tables that produce your data, inherits Unity Catalog governance, integrates natively with Databricks Model Serving, and removes a class of synchronization bugs between your source-of-truth tables and your search index. For Databricks-resident data, an external vector DB usually adds more complexity than value.' },
-  { q: 'How do I evaluate a Databricks RAG pipeline?', a: 'Use MLflow Evaluate with RAG-specific metrics — answer relevance, faithfulness, context precision, context recall. Databricks ships built-in evaluation judges, but for high-stakes domains build a curated eval set and run regression tests against every prompt or retrieval change.' },
+  { q: 'How do I evaluate a Databricks RAG pipeline?', a: 'Use MLflow Evaluate with RAG-specific metrics, answer relevance, faithfulness, context precision, context recall. Databricks ships built-in evaluation judges, but for high-stakes domains build a curated eval set and run regression tests against every prompt or retrieval change.' },
   { q: 'What is the best chunking strategy for RAG on Databricks?', a: "There isn't one. Start with 500-1000 token chunks with 10-20% overlap, then iterate based on retrieval evaluation. Document-structure-aware chunking (markdown headers, code blocks, sections) usually beats fixed-size splitting. The book covers four strategies in detail and when each wins." },
   { q: 'Can I use OpenAI or Claude models with Databricks Vector Search?', a: "Yes. Databricks Model Serving supports both Databricks-hosted foundation models (DBRX, Llama, Mosaic) and external endpoints (OpenAI, Anthropic, Cohere) through a single API. The retrieval and orchestration layer is decoupled from the generation model choice." },
   { q: 'How much does a production RAG system on Databricks cost?', a: 'It varies wildly with traffic and index size. The dominant costs are usually (1) embedding model calls during ingestion, (2) vector index serving DBUs, (3) generation model inference, and (4) Lakehouse storage. The book has a cost model and benchmarks for typical workloads.' },
@@ -22,7 +22,7 @@ const relatedTopics = [
 <TopicShell
   title="RAG on Databricks: The 2026 Practitioner's Guide"
   metaTitle="RAG on Databricks (2026): Vector Search, Mosaic AI, Production Patterns"
-  description="A complete practitioner guide to building retrieval-augmented generation (RAG) systems on Databricks in 2026 — Mosaic AI Vector Search, chunking, retrieval evaluation, generation, MLflow tracing, and the operational patterns that survive scale."
+  description="A complete practitioner guide to building retrieval-augmented generation (RAG) systems on Databricks in 2026, Mosaic AI Vector Search, chunking, retrieval evaluation, generation, MLflow tracing, and the operational patterns that survive scale."
   keywords={[
     'rag on databricks',
     'databricks rag',
@@ -45,11 +45,11 @@ const relatedTopics = [
   toc={[
     'The architecture, in production-realistic terms',
     'Chunking is where most teams underestimate the work',
-    'Mosaic AI Vector Search is the right default — usually',
+    'Mosaic AI Vector Search is the right default, usually',
     'Generation model selection matters less than you think',
     'Evaluation is what separates a working RAG from a shipped RAG',
-    'Tracing and observability — MLflow handles both',
-    'When RAG becomes an agent — and you should care',
+    'Tracing and observability, MLflow handles both',
+    'When RAG becomes an agent, and you should care',
     'What the book covers, in detail',
   ]}
   mentions={[
@@ -65,7 +65,7 @@ const relatedTopics = [
   howToSteps={[
     { name: 'Land documents in a Delta table under Unity Catalog', text: 'Use Lakeflow Connect or Auto Loader to ingest source documents into a governed Delta table. Document text becomes a column; metadata (source, timestamp, ACL tags) become sibling columns for filtering during retrieval.' },
     { name: 'Chunk the documents with the right strategy', text: 'Pick chunking by source structure, not by token count alone. Markdown headers, code blocks, and PDF sections define semantic chunk boundaries. Start at 500–1000 tokens with 10–20% overlap, then iterate based on retrieval evaluation.' },
-    { name: 'Build a Mosaic AI Vector Search index over the chunks', text: 'Create a Delta-sync index that auto-updates from the chunked table. Pick an embedding model from the Foundation Model APIs — bge-large for most cases, smaller models when latency matters.' },
+    { name: 'Build a Mosaic AI Vector Search index over the chunks', text: 'Create a Delta-sync index that auto-updates from the chunked table. Pick an embedding model from the Foundation Model APIs, bge-large for most cases, smaller models when latency matters.' },
     { name: 'Wrap retrieval + generation behind a Model Serving endpoint', text: 'Deploy a langchain or pyfunc chain that embeds the question, retrieves top-k chunks, builds the prompt, and calls a generation model. Front the endpoint with the AI Gateway for governance.' },
     { name: 'Instrument every step with MLflow Tracing', text: 'Enable MLflow 3 autolog for the agent runtime. Every retrieval, every prompt, every generation lands as a trace span. The traces become both the debug surface and the input to evaluation.' },
     { name: 'Build an offline evaluation set and run MLflow Evaluate', text: 'Curate 50–200 question/answer pairs with expected citations. Run mlflow.evaluate with RAG-specific judges (answer relevance, faithfulness, context precision, context recall). Gate deployments on score regressions.' },
@@ -77,19 +77,19 @@ const relatedTopics = [
     Most teams shipping a Databricks RAG system in 2026 follow roughly the same architecture. Documents
     land in Delta tables. A pipeline chunks and embeds them. The chunks plus their embeddings land in
     a <a href="/topics/vector-search/">Mosaic AI Vector Search</a> index. At query time, the user's
-    question is embedded, the top-k chunks are retrieved, and a generation model — local or external
-    — produces the answer. Tracing, evaluation, and monitoring run through MLflow.
+    question is embedded, the top-k chunks are retrieved, and a generation model, local or external
+   , produces the answer. Tracing, evaluation, and monitoring run through MLflow.
   </p>
 
   <p>
     The picture above is correct. It is also dangerously oversimplified. The interesting question is
-    not "what does a RAG system look like" — it's "what breaks at scale, and what does it cost?"
+    not "what does a RAG system look like", it's "what breaks at scale, and what does it cost?"
   </p>
 
   <BookFigure
     src="/images/figures/ch45_fig1_rag_pipeline.png"
     alt="Five-stage RAG pipeline: question → embed → retrieve → assemble prompt → generate grounded answer"
-    caption="The RAG pipeline, end to end. Five stages — short each, together they turn a model into a grounded assistant. The Vector Search index is auto-synced from a UC Delta table."
+    caption="The RAG pipeline, end to end. Five stages, short each, together they turn a model into a grounded assistant. The Vector Search index is auto-synced from a UC Delta table."
     source="Figure 45.1 · Volume 4, Chapter 45"
   />
 
@@ -100,11 +100,11 @@ const relatedTopics = [
   </p>
 
   <ol>
-    <li><strong>Ingestion and chunking</strong> — converting raw documents into retrieval-friendly units.</li>
-    <li><strong>Embedding generation</strong> — turning text chunks into vectors using a foundation model.</li>
-    <li><strong>Vector index</strong> — a queryable index over those vectors, kept in sync with the source data.</li>
-    <li><strong>Retrieval and re-ranking</strong> — finding relevant chunks for a given query.</li>
-    <li><strong>Generation</strong> — assembling a prompt and producing the final answer with an LLM.</li>
+    <li><strong>Ingestion and chunking</strong>, converting raw documents into retrieval-friendly units.</li>
+    <li><strong>Embedding generation</strong>, turning text chunks into vectors using a foundation model.</li>
+    <li><strong>Vector index</strong>, a queryable index over those vectors, kept in sync with the source data.</li>
+    <li><strong>Retrieval and re-ranking</strong>, finding relevant chunks for a given query.</li>
+    <li><strong>Generation</strong>, assembling a prompt and producing the final answer with an LLM.</li>
   </ol>
 
   <p>
@@ -116,8 +116,8 @@ const relatedTopics = [
 
   <p>
     The fundamental tension in chunking: small chunks retrieve more precisely but lose context;
-    large chunks preserve context but dilute relevance signal. Fixed-size chunking — the default in
-    every tutorial — is rarely the right answer for production.
+    large chunks preserve context but dilute relevance signal. Fixed-size chunking, the default in
+    every tutorial, is rarely the right answer for production.
   </p>
 
   <p>
@@ -125,10 +125,10 @@ const relatedTopics = [
   </p>
 
   <ul>
-    <li><strong>Structure-aware</strong> — chunks follow document semantics: markdown headers, HTML sections, code blocks. Keeps related content together.</li>
-    <li><strong>Recursive</strong> — splits on hierarchical separators (paragraphs first, then sentences, then characters), preserving as much structure as the chunk size allows.</li>
-    <li><strong>Semantic</strong> — uses an embedding model to detect topical boundaries. More expensive at ingestion, often pays back in retrieval quality.</li>
-    <li><strong>Late chunking</strong> — embeds the full document, then chunks the embedding output. Preserves long-range context but requires support from the embedding model.</li>
+    <li><strong>Structure-aware</strong>, chunks follow document semantics: markdown headers, HTML sections, code blocks. Keeps related content together.</li>
+    <li><strong>Recursive</strong>, splits on hierarchical separators (paragraphs first, then sentences, then characters), preserving as much structure as the chunk size allows.</li>
+    <li><strong>Semantic</strong>, uses an embedding model to detect topical boundaries. More expensive at ingestion, often pays back in retrieval quality.</li>
+    <li><strong>Late chunking</strong>, embeds the full document, then chunks the embedding output. Preserves long-range context but requires support from the embedding model.</li>
   </ul>
 
   <p>
@@ -136,13 +136,13 @@ const relatedTopics = [
     in a blog post.
   </p>
 
-  <h2 id="mosaic-ai-vector-search-is-the-right-default--usually">Mosaic AI Vector Search is the right default — usually</h2>
+  <h2 id="mosaic-ai-vector-search-is-the-right-default--usually">Mosaic AI Vector Search is the right default, usually</h2>
 
   <p>
     For Databricks-resident data, Mosaic AI Vector Search is almost always the right vector store.
     It indexes directly from Delta tables, syncs automatically when source data changes, inherits
     Unity Catalog access controls, and runs in the same workspace as your generation models. The
-    alternative — externalizing to Pinecone, Weaviate, or pgvector — adds an entire integration
+    alternative, externalizing to Pinecone, Weaviate, or pgvector, adds an entire integration
     surface and a class of "the index is out of date" bugs.
   </p>
 
@@ -179,24 +179,24 @@ const relatedTopics = [
   </p>
 
   <ul>
-    <li><strong>Answer relevance</strong> — does the answer address the question?</li>
-    <li><strong>Faithfulness / groundedness</strong> — does the answer stay within the retrieved context?</li>
-    <li><strong>Context precision</strong> — how much of the retrieved context is relevant?</li>
-    <li><strong>Context recall</strong> — how much of the required information was retrieved?</li>
-    <li><strong>Safety</strong> — does the output avoid policy violations?</li>
+    <li><strong>Answer relevance</strong>, does the answer address the question?</li>
+    <li><strong>Faithfulness / groundedness</strong>, does the answer stay within the retrieved context?</li>
+    <li><strong>Context precision</strong>, how much of the retrieved context is relevant?</li>
+    <li><strong>Context recall</strong>, how much of the required information was retrieved?</li>
+    <li><strong>Safety</strong>, does the output avoid policy violations?</li>
   </ul>
 
   <p>
-    Build a curated evaluation set early — 50-200 representative question/expected-answer pairs is
+    Build a curated evaluation set early, 50-200 representative question/expected-answer pairs is
     enough to start. Run it on every meaningful pipeline change. Track results in the MLflow
     experiment UI. The discipline of regression-testing a RAG system is the same discipline you'd
     apply to any other production code.
   </p>
 
-  <h2 id="tracing-and-observability--mlflow-handles-both">Tracing and observability — MLflow handles both</h2>
+  <h2 id="tracing-and-observability--mlflow-handles-both">Tracing and observability, MLflow handles both</h2>
 
   <p>
-    MLflow 3.0 added native LLM tracing — every retrieval, every model call, every tool invocation
+    MLflow 3.0 added native LLM tracing, every retrieval, every model call, every tool invocation
     becomes a span. On Databricks, this gives you a single pane of glass for debugging "why did the
     answer say that?" Without tracing, RAG debugging is a nightmare; with it, root-causing a bad
     answer takes minutes instead of hours.
@@ -206,7 +206,7 @@ const relatedTopics = [
     The <a href="/topics/mlflow/">MLflow topic guide</a> goes deeper into the tracing model.
   </p>
 
-  <h2 id="when-rag-becomes-an-agent--and-you-should-care">When RAG becomes an agent — and you should care</h2>
+  <h2 id="when-rag-becomes-an-agent--and-you-should-care">When RAG becomes an agent, and you should care</h2>
 
   <p>
     The line between "RAG system" and "agent" blurs quickly. The moment your system needs to

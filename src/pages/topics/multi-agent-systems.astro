@@ -3,12 +3,12 @@ import TopicShell from '../../components/TopicShell.astro';
 import BookFigure from '../../components/BookFigure.astro';
 
 const faqs = [
-  { q: 'What is a multi-agent system?', a: 'A multi-agent system is one where two or more LLM-backed agents collaborate to solve a task — typically through a supervisor pattern, a peer pattern, or a pipeline of specialists. Each agent has its own prompt, tools, and possibly model choice. On Databricks, multi-agent systems are usually built with AgentBricks.' },
-  { q: 'When should I use multiple agents instead of one?', a: "Use multiple agents when (1) the task requires genuinely different specializations (e.g. retrieval + planning + execution), (2) tool count is so high that a single agent's tool selection degrades, or (3) you need parallel reasoning over independent sub-problems. Most tasks don't actually need multi-agent — start with one and decompose only when you have evidence." },
+  { q: 'What is a multi-agent system?', a: 'A multi-agent system is one where two or more LLM-backed agents collaborate to solve a task, typically through a supervisor pattern, a peer pattern, or a pipeline of specialists. Each agent has its own prompt, tools, and possibly model choice. On Databricks, multi-agent systems are usually built with AgentBricks.' },
+  { q: 'When should I use multiple agents instead of one?', a: "Use multiple agents when (1) the task requires genuinely different specializations (e.g. retrieval + planning + execution), (2) tool count is so high that a single agent's tool selection degrades, or (3) you need parallel reasoning over independent sub-problems. Most tasks don't actually need multi-agent, start with one and decompose only when you have evidence." },
   { q: 'What is the supervisor pattern?', a: 'A supervisor agent routes the user request to one or more specialist agents, gathers their outputs, and either returns directly or makes additional calls. The supervisor sees the whole conversation; specialists see only what the supervisor passes them. Easy to reason about, predictable, the most common production pattern.' },
-  { q: 'What is the peer-to-peer pattern?', a: 'Agents communicate directly with each other rather than through a supervisor. More flexible but harder to control — failure modes include infinite loops, cascading hallucinations, and runaway message volumes. Rare in production. Useful in research and creative-collaboration scenarios.' },
+  { q: 'What is the peer-to-peer pattern?', a: 'Agents communicate directly with each other rather than through a supervisor. More flexible but harder to control, failure modes include infinite loops, cascading hallucinations, and runaway message volumes. Rare in production. Useful in research and creative-collaboration scenarios.' },
   { q: 'How do you debug a multi-agent system?', a: "MLflow tracing captures every agent call, every tool invocation, every intermediate message. For multi-agent, traces become trees rather than linear sequences. You read the trace to see which agent did what when. Without tracing, multi-agent debugging is intractable; with tracing, it's tedious but tractable." },
-  { q: 'What are the biggest failure modes?', a: 'Three to watch: (1) supervisor over-decomposition (breaking a simple task into too many agent calls, adding latency and cost without value); (2) silent error propagation (one agent\'s wrong answer becomes another\'s input, hidden by the next layer); (3) cost runaway from chatty agents — multi-agent can 5-10x your inference cost if not bounded.' },
+  { q: 'What are the biggest failure modes?', a: 'Three to watch: (1) supervisor over-decomposition (breaking a simple task into too many agent calls, adding latency and cost without value); (2) silent error propagation (one agent\'s wrong answer becomes another\'s input, hidden by the next layer); (3) cost runaway from chatty agents, multi-agent can 5-10x your inference cost if not bounded.' },
 ];
 
 const relatedTopics = [
@@ -21,7 +21,7 @@ const relatedTopics = [
 <TopicShell
   title="Multi-Agent Systems on Databricks: When and How"
   metaTitle="Multi-Agent Systems on Databricks (2026): Patterns, AgentBricks, Production"
-  description="Practitioner guide to building multi-agent systems on Databricks in 2026 — supervisor and peer patterns, when single-agent is enough, debugging with MLflow tracing, and production failure modes."
+  description="Practitioner guide to building multi-agent systems on Databricks in 2026, supervisor and peer patterns, when single-agent is enough, debugging with MLflow tracing, and production failure modes."
   keywords={[
     'multi-agent systems databricks',
     'databricks multi-agent',
@@ -90,7 +90,7 @@ const relatedTopics = [
     <li><strong>Parallel independent reasoning.</strong> When the task naturally decomposes into independent sub-tasks (analyze N documents in parallel), running them on parallel agent instances is faster than serial single-agent processing.</li>
   </ol>
 
-  <h2>The supervisor pattern — the default that works</h2>
+  <h2>The supervisor pattern, the default that works</h2>
 
   <p>
     The supervisor pattern is the production default for a reason. It looks like this:
@@ -100,7 +100,7 @@ const relatedTopics = [
     <li>The supervisor agent receives the user request.</li>
     <li>It decides which specialist agent(s) to invoke.</li>
     <li>Specialists run their work and return results.</li>
-    <li>The supervisor aggregates and returns the final answer — or decides to invoke more specialists.</li>
+    <li>The supervisor aggregates and returns the final answer, or decides to invoke more specialists.</li>
   </ol>
 
   <p>
@@ -110,7 +110,7 @@ const relatedTopics = [
   </p>
 
   <p>
-    On AgentBricks, supervisors are implemented by composing agents — a specialist agent becomes a
+    On AgentBricks, supervisors are implemented by composing agents, a specialist agent becomes a
     tool callable from the supervisor. The supervisor sees the specialist's tool name and
     description, calls it like any other tool, gets a structured response.
   </p>
@@ -118,8 +118,8 @@ const relatedTopics = [
   <h2>Peer-to-peer is rarely the right answer in production</h2>
 
   <p>
-    Peer-to-peer agent systems — where agents talk directly to each other rather than through a
-    supervisor — are flexible and powerful in research. They are also where the worst production
+    Peer-to-peer agent systems, where agents talk directly to each other rather than through a
+    supervisor, are flexible and powerful in research. They are also where the worst production
     failures happen: infinite message loops, runaway costs, deadlocks, cascading hallucinations.
   </p>
 
@@ -153,7 +153,7 @@ const relatedTopics = [
   <BookFigure
     src="/images/figures/ch52_fig2_multi_agent_eval.svg"
     alt="Multi-agent evaluation strategy: turn-level judges per agent plus end-to-end task-level judge"
-    caption="Multi-agent evaluation. Per-hop judges score each agent in isolation; an end-to-end judge scores the whole conversation. You need both — only one of them tells you the truth at a time."
+    caption="Multi-agent evaluation. Per-hop judges score each agent in isolation; an end-to-end judge scores the whole conversation. You need both, only one of them tells you the truth at a time."
     source="Figure 52.2 · Volume 4, Chapter 52"
   />
 
@@ -193,7 +193,7 @@ const relatedTopics = [
     <li>Hard caps on tokens per request, per session, per agent.</li>
     <li>Smaller models for specialists, frontier model only for the supervisor.</li>
     <li>Caching specialist outputs when inputs are repeated.</li>
-    <li>Aggressive early termination — if the supervisor has a high-confidence answer after one specialist call, stop.</li>
+    <li>Aggressive early termination, if the supervisor has a high-confidence answer after one specialist call, stop.</li>
   </ul>
 
   <h2>What the book covers</h2>
@@ -209,7 +209,7 @@ const relatedTopics = [
     <li>Parallel agent execution for independent sub-tasks.</li>
     <li>Tracing and evaluation patterns specific to multi-agent.</li>
     <li>Cost models for multi-agent at three traffic tiers.</li>
-    <li>Production failure modes — loops, runaways, deadlocks — and how to prevent them.</li>
+    <li>Production failure modes, loops, runaways, deadlocks, and how to prevent them.</li>
   </ul>
 
 </TopicShell>
